@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -743,21 +743,21 @@
             <div
               class="sound-card selected"
               data-id="rain"
-              onclick="selectSound(this,'rain')"
+              onclick="selectSound(this, 'rain')"
             >
               <span class="s-emoji">🌧️</span>
               <div class="s-info">
                 <div class="sound-name">Rain &amp; Storm</div>
                 <div class="sound-desc">Heavy rain, rolling thunder</div>
               </div>
-              <button class="preview-btn" onclick="previewSound(event,'rain')">
+              <button class="preview-btn" onclick="previewSound(event, 'rain')">
                 ▶
               </button>
             </div>
             <div
               class="sound-card"
               data-id="forest"
-              onclick="selectSound(this,'forest')"
+              onclick="selectSound(this, 'forest')"
             >
               <span class="s-emoji">🌲</span>
               <div class="s-info">
@@ -766,7 +766,7 @@
               </div>
               <button
                 class="preview-btn"
-                onclick="previewSound(event,'forest')"
+                onclick="previewSound(event, 'forest')"
               >
                 ▶
               </button>
@@ -774,28 +774,31 @@
             <div
               class="sound-card"
               data-id="ocean"
-              onclick="selectSound(this,'ocean')"
+              onclick="selectSound(this, 'ocean')"
             >
               <span class="s-emoji">🌊</span>
               <div class="s-info">
                 <div class="sound-name">Ocean Waves</div>
                 <div class="sound-desc">Shore break, sea breeze</div>
               </div>
-              <button class="preview-btn" onclick="previewSound(event,'ocean')">
+              <button
+                class="preview-btn"
+                onclick="previewSound(event, 'ocean')"
+              >
                 ▶
               </button>
             </div>
             <div
               class="sound-card"
               data-id="fire"
-              onclick="selectSound(this,'fire')"
+              onclick="selectSound(this, 'fire')"
             >
               <span class="s-emoji">🔥</span>
               <div class="s-info">
                 <div class="sound-name">Campfire</div>
                 <div class="sound-desc">Crackling wood, warm embers</div>
               </div>
-              <button class="preview-btn" onclick="previewSound(event,'fire')">
+              <button class="preview-btn" onclick="previewSound(event, 'fire')">
                 ▶
               </button>
             </div>
@@ -815,7 +818,7 @@
             <div
               class="sound-card"
               data-id="lofi"
-              onclick="selectSound(this,'lofi')"
+              onclick="selectSound(this, 'lofi')"
             >
               <span class="s-emoji">📻</span>
               <div class="s-info">
@@ -824,28 +827,28 @@
                   Vinyl crackle, warm chords, lazy beat
                 </div>
               </div>
-              <button class="preview-btn" onclick="previewSound(event,'lofi')">
+              <button class="preview-btn" onclick="previewSound(event, 'lofi')">
                 ▶
               </button>
             </div>
             <div
               class="sound-card"
               data-id="jazz"
-              onclick="selectSound(this,'jazz')"
+              onclick="selectSound(this, 'jazz')"
             >
               <span class="s-emoji">🎷</span>
               <div class="s-info">
                 <div class="sound-name">Late Night Jazz</div>
                 <div class="sound-desc">Piano, upright bass, brushed snare</div>
               </div>
-              <button class="preview-btn" onclick="previewSound(event,'jazz')">
+              <button class="preview-btn" onclick="previewSound(event, 'jazz')">
                 ▶
               </button>
             </div>
             <div
               class="sound-card"
               data-id="ambient"
-              onclick="selectSound(this,'ambient')"
+              onclick="selectSound(this, 'ambient')"
             >
               <span class="s-emoji">🌌</span>
               <div class="s-info">
@@ -854,7 +857,7 @@
               </div>
               <button
                 class="preview-btn"
-                onclick="previewSound(event,'ambient')"
+                onclick="previewSound(event, 'ambient')"
               >
                 ▶
               </button>
@@ -862,14 +865,17 @@
             <div
               class="sound-card"
               data-id="white"
-              onclick="selectSound(this,'white')"
+              onclick="selectSound(this, 'white')"
             >
               <span class="s-emoji">〰️</span>
               <div class="s-info">
                 <div class="sound-name">White Noise</div>
                 <div class="sound-desc">Smooth broadband static</div>
               </div>
-              <button class="preview-btn" onclick="previewSound(event,'white')">
+              <button
+                class="preview-btn"
+                onclick="previewSound(event, 'white')"
+              >
                 ▶
               </button>
             </div>
@@ -919,7 +925,9 @@
             id="secret-msg"
             placeholder="Write something only your recipient should read…"
             maxlength="500"
-            oninput="document.getElementById('cc').textContent=this.value.length"
+            oninput="
+              document.getElementById('cc').textContent = this.value.length
+            "
           ></textarea>
           <div class="char-hint"><span id="cc">0</span> / 500 characters</div>
         </div>
@@ -935,13 +943,24 @@
             </div>
             <div class="prog-label" id="enc-label"></div>
           </div>
-          <button
-            class="btn btn-dark"
-            id="enc-btn"
-            onclick="encodeAndDownload()"
-          >
-            🔒 Encode &amp; Download .wav
-          </button>
+          <div style="display: flex; gap: 10px">
+            <button
+              class="btn btn-dark"
+              id="enc-btn"
+              onclick="encodeAndDownload()"
+              style="flex: 1"
+            >
+              🔒 Download .wav
+            </button>
+            <button
+              class="btn btn-dark"
+              id="share-btn"
+              onclick="encodeAndShare()"
+              style="flex: 1; background: var(--gold); color: #fff"
+            >
+              🔗 Generate Share Link
+            </button>
+          </div>
           <div
             style="
               text-align: center;
@@ -951,9 +970,68 @@
               margin-top: 12px;
             "
           >
-            The file will sound exactly like the cover sound you chose.<br />
-            Your message is hidden in the audio data — completely undetectable
-            by ear.
+            Download saves a .wav file. Share Link generates a URL — anyone with
+            it can play and decode the message.
+          </div>
+
+          <!-- Share link output -->
+          <div id="share-result" style="display: none; margin-top: 16px">
+            <div
+              style="
+                font-size: 9px;
+                letter-spacing: 0.28em;
+                text-transform: uppercase;
+                color: var(--dim);
+                margin-bottom: 8px;
+              "
+            >
+              Share Link
+            </div>
+            <div style="display: flex; gap: 8px; align-items: stretch">
+              <input
+                id="share-url"
+                type="text"
+                readonly
+                style="
+                  flex: 1;
+                  background: var(--paper2);
+                  border: 1px solid var(--border);
+                  padding: 10px 12px;
+                  font-family: &quot;DM Mono&quot;, monospace;
+                  font-size: 10px;
+                  color: var(--ink);
+                  outline: none;
+                  min-width: 0;
+                "
+              />
+              <button
+                onclick="copyShareLink()"
+                style="
+                  background: var(--ink);
+                  color: var(--paper);
+                  border: none;
+                  padding: 10px 16px;
+                  font-family: &quot;DM Mono&quot;, monospace;
+                  font-size: 10px;
+                  letter-spacing: 0.15em;
+                  cursor: pointer;
+                  white-space: nowrap;
+                "
+              >
+                Copy
+              </button>
+            </div>
+            <div
+              style="
+                font-size: 10px;
+                color: var(--dim);
+                margin-top: 6px;
+                line-height: 1.7;
+              "
+            >
+              ⚠ This link contains the full audio file. It will be long — send
+              via messaging apps, email, or a link shortener.
+            </div>
           </div>
         </div>
       </div>
@@ -1017,6 +1095,71 @@
           </div>
 
           <hr />
+
+          <!-- ElevenLabs settings -->
+          <div style="margin-bottom: 14px">
+            <div
+              style="
+                font-size: 9px;
+                letter-spacing: 0.28em;
+                text-transform: uppercase;
+                color: var(--dim);
+                margin-bottom: 8px;
+              "
+            >
+              🔊 Voice Readout (optional)
+            </div>
+            <div
+              style="
+                display: flex;
+                gap: 8px;
+                align-items: stretch;
+                margin-bottom: 8px;
+              "
+            >
+              <input
+                id="el-key"
+                type="password"
+                placeholder="Paste ElevenLabs API key for premium voice…"
+                style="
+                  flex: 1;
+                  background: var(--paper2);
+                  border: 1px solid var(--border);
+                  padding: 10px 12px;
+                  font-family: &quot;DM Mono&quot;, monospace;
+                  font-size: 10px;
+                  color: var(--ink);
+                  outline: none;
+                  min-width: 0;
+                "
+                oninput="saveElKey(this.value)"
+              />
+              <select
+                id="el-voice"
+                onchange="saveElVoice(this.value)"
+                style="
+                  background: var(--paper2);
+                  border: 1px solid var(--border);
+                  padding: 10px 10px;
+                  font-family: &quot;DM Mono&quot;, monospace;
+                  font-size: 10px;
+                  color: var(--ink);
+                  outline: none;
+                  cursor: pointer;
+                "
+              >
+                <option value="EXAVITQu4vr4xnSDxMaL">Sarah</option>
+                <option value="21m00Tcm4TlvDq8ikWAM">Rachel</option>
+                <option value="9BWtsMINqrJLrRacOk9x">Aria</option>
+                <option value="CwhRRKZmziJNPQn70k3p">Roger</option>
+                <option value="onwK4e9ZLuTAKqWW03F9">Daniel</option>
+              </select>
+            </div>
+            <div style="font-size: 10px; color: var(--dim); line-height: 1.7">
+              No key? The app falls back to your browser's built-in voice. Get a
+              free key at <span style="color: var(--gold)">elevenlabs.io</span>
+            </div>
+          </div>
 
           <div class="prog-wrap" id="dec-prog">
             <div class="prog-bar">
@@ -1204,7 +1347,7 @@
               (tSlot < 3 ? 0.12 : 0);
             d[i] = Math.max(
               -1,
-              Math.min(1, mist + sizzle * 0.3 + dropsV + thunder)
+              Math.min(1, mist + sizzle * 0.3 + dropsV + thunder),
             );
           }
         } else if (type === "forest") {
@@ -1272,7 +1415,7 @@
               0.25 *
               (foamPhase > 0.45 && foamPhase < 0.65
                 ? Math.exp(
-                    -(foamPhase - 0.5) * 20 + 10 * Math.abs(foamPhase - 0.5)
+                    -(foamPhase - 0.5) * 20 + 10 * Math.abs(foamPhase - 0.5),
                   )
                 : 0);
             // Distant gull (occasional)
@@ -1368,8 +1511,8 @@
               -1,
               Math.min(
                 1,
-                harm * wobble + kick + snare + hihat + vinyl + pink() * 0.04
-              )
+                harm * wobble + kick + snare + hihat + vinyl + pink() * 0.04,
+              ),
             );
           }
         } else if (type === "jazz") {
@@ -1423,7 +1566,7 @@
             const room = pink() * 0.04;
             d[i] = Math.max(
               -1,
-              Math.min(1, bass + piano + snare + ride + room)
+              Math.min(1, bass + piano + snare + ride + room),
             );
           }
         } else if (type === "ambient") {
@@ -1526,7 +1669,7 @@
         for (let i = 0; i < samples.length; i++) {
           let s16 = Math.max(
             -32768,
-            Math.min(32767, Math.round(samples[i] * 32767))
+            Math.min(32767, Math.round(samples[i] * 32767)),
           );
           if (i < bits.length) s16 = (s16 & ~1) | bits[i];
           out[i] = s16 / 32767;
@@ -1569,7 +1712,7 @@
           v.setInt16(
             44 + i * 2,
             Math.max(-32768, Math.min(32767, Math.round(samples[i] * 32767))),
-            true
+            true,
           );
         return buf;
       }
@@ -1642,7 +1785,7 @@
         URL.revokeObjectURL(url);
         toast(
           `Downloaded — ${bits.length} bits hidden inside ${DUR}s of ${selectedSound}`,
-          "ok"
+          "ok",
         );
         setTimeout(() => {
           btn.disabled = false;
@@ -1652,8 +1795,161 @@
       }
 
       // ══════════════════════════════════════════════════════════
-      // UPLOAD & PLAYBACK
+      // SHARE LINK — encode WAV into URL hash
       // ══════════════════════════════════════════════════════════
+      async function encodeAndShare() {
+        const msg = document.getElementById("secret-msg").value.trim();
+        if (!msg) {
+          toast("Type a message first", "err");
+          return;
+        }
+
+        const btn = document.getElementById("share-btn");
+        const pw = document.getElementById("enc-prog");
+        const pf = document.getElementById("enc-fill");
+        const pl = document.getElementById("enc-label");
+        btn.disabled = true;
+        pw.style.display = "block";
+        document.getElementById("share-result").style.display = "none";
+
+        pl.textContent = "Synthesising cover audio…";
+        pf.style.width = "15%";
+        await sleep(20);
+
+        let raw;
+        if (selectedSound === "custom") {
+          if (!customAudioBuffer) {
+            toast("Upload a custom sound first", "err");
+            btn.disabled = false;
+            pw.style.display = "none";
+            return;
+          }
+          const ctx = getCtx();
+          const offCtx = new OfflineAudioContext(1, Math.floor(SR * DUR), SR);
+          const src = offCtx.createBufferSource();
+          src.buffer = customAudioBuffer;
+          src.loop = true;
+          src.connect(offCtx.destination);
+          src.start(0);
+          const rendered = await offCtx.startRendering();
+          raw = rendered.getChannelData(0);
+        } else {
+          raw = synthesise(selectedSound, SR, DUR);
+        }
+
+        pf.style.width = "40%";
+        pl.textContent = "Embedding message…";
+        await sleep(20);
+        const bits = msgToBits(msg);
+        if (bits.length > raw.length) {
+          toast("Message too long", "err");
+          btn.disabled = false;
+          pw.style.display = "none";
+          return;
+        }
+        const encoded = embedBits(raw, bits);
+
+        pf.style.width = "65%";
+        pl.textContent = "Building WAV…";
+        await sleep(20);
+        const wavBuf = buildWav(encoded, SR);
+
+        pf.style.width = "80%";
+        pl.textContent = "Encoding to base64…";
+        await sleep(20);
+
+        // Convert to base64
+        const bytes = new Uint8Array(wavBuf);
+        let binary = "";
+        for (let i = 0; i < bytes.length; i++)
+          binary += String.fromCharCode(bytes[i]);
+        const b64 = btoa(binary);
+
+        pf.style.width = "95%";
+        pl.textContent = "Generating link…";
+        await sleep(20);
+
+        // Build shareable URL using current page location + hash
+        const shareUrl = window.location.href.split("#")[0] + "#whisper=" + b64;
+
+        pf.style.width = "100%";
+        pl.textContent = "✓ Link ready to share";
+        document.getElementById("share-url").value = shareUrl;
+        document.getElementById("share-result").style.display = "block";
+        btn.disabled = false;
+        toast("Link generated — copy and share it", "ok");
+      }
+
+      function copyShareLink() {
+        const input = document.getElementById("share-url");
+        input.select();
+        navigator.clipboard
+          .writeText(input.value)
+          .then(() => {
+            toast("Link copied to clipboard", "ok");
+          })
+          .catch(() => {
+            // Fallback
+            document.execCommand("copy");
+            toast("Link copied", "ok");
+          });
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // AUTO-LOAD FROM URL HASH on page open
+      // ══════════════════════════════════════════════════════════
+      async function checkUrlForSharedAudio() {
+        const hash = window.location.hash;
+        if (!hash.startsWith("#whisper=")) return;
+
+        const b64 = hash.slice("#whisper=".length);
+        if (!b64) return;
+
+        // Switch to reveal tab immediately
+        setMode("reveal");
+        toast("Loading shared audio…", "ok");
+
+        try {
+          // Decode base64 → ArrayBuffer
+          const binary = atob(b64);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++)
+            bytes[i] = binary.charCodeAt(i);
+          const arrayBuf = bytes.buffer;
+
+          const ctx = getCtx();
+          rxBuffer = await ctx.decodeAudioData(arrayBuf);
+
+          document.getElementById("rx-fname").textContent = "Shared audio";
+          document.getElementById("up-filename").textContent =
+            "📡 Loaded from share link";
+          document.getElementById("rx-section").style.display = "block";
+          document.getElementById("result-box").style.display = "none";
+          rxOffset = 0;
+          rxPlaying = false;
+          document.getElementById("rx-play-btn").textContent = "▶";
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => drawWaveform(rxBuffer)),
+          );
+          toast("Shared audio loaded — press Reveal to decode", "ok");
+        } catch (e) {
+          toast("Could not load shared audio from link", "err");
+        }
+      }
+
+      // Run on load
+      window.addEventListener("load", () => {
+        // Restore saved ElevenLabs settings
+        try {
+          const savedKey = localStorage.getItem("whisper_el_key");
+          const savedVoice = localStorage.getItem("whisper_el_voice");
+          if (savedKey) document.getElementById("el-key").value = savedKey;
+          if (savedVoice)
+            document.getElementById("el-voice").value = savedVoice;
+        } catch (e) {}
+        setTimeout(checkUrlForSharedAudio, 300);
+      });
+
       function handleUpload(input) {
         const file = input.files[0];
         if (!file) return;
@@ -1671,7 +1967,7 @@
             document.getElementById("rx-play-btn").textContent = "▶";
             // Defer draw until browser has laid out the now-visible canvas
             requestAnimationFrame(() =>
-              requestAnimationFrame(() => drawWaveform(rxBuffer))
+              requestAnimationFrame(() => drawWaveform(rxBuffer)),
             );
             toast("File loaded — press Play or Reveal", "ok");
           } catch (err) {
@@ -1752,9 +2048,8 @@
           s = Math.floor(elapsed % 60);
         const dm = Math.floor(dur / 60),
           ds = Math.floor(dur % 60);
-        document.getElementById("rx-time").textContent = `${m}:${s
-          .toString()
-          .padStart(2, "0")} / ${dm}:${ds.toString().padStart(2, "0")}`;
+        document.getElementById("rx-time").textContent =
+          `${m}:${s.toString().padStart(2, "0")} / ${dm}:${ds.toString().padStart(2, "0")}`;
         rxRaf = requestAnimationFrame(tickPlayer);
       }
 
@@ -1894,36 +2189,92 @@
         btn.disabled = false;
         toast(`Message revealed — ${decoded.length} characters`, "ok");
 
-        // ── Phase 5: auto TTS ──
-        if ("speechSynthesis" in window && decoded.length > 0) {
-          // Small delay so user can read first
-          await sleep(400);
-          const ttsEl = document.getElementById("tts-indicator");
-          ttsEl.classList.add("active");
-          window.speechSynthesis.cancel();
-          const utt = new SpeechSynthesisUtterance(decoded);
-          utt.rate = 0.88;
-          utt.pitch = 0.9;
-          utt.volume = 1;
-          // Try to pick a soft/female voice if available
-          const voices = window.speechSynthesis.getVoices();
-          const preferred = voices.find(
-            (v) =>
-              v.name.toLowerCase().includes("samantha") ||
-              v.name.toLowerCase().includes("karen") ||
-              v.name.toLowerCase().includes("moira") ||
-              v.name.toLowerCase().includes("victoria") ||
-              v.name.toLowerCase().includes("female")
-          );
-          if (preferred) utt.voice = preferred;
-          utt.onend = () => {
-            ttsEl.classList.remove("active");
-          };
-          utt.onerror = () => {
-            ttsEl.classList.remove("active");
-          };
-          window.speechSynthesis.speak(utt);
+        // ── Phase 5: voice readout ──
+        await sleep(400);
+        const elKey = (document.getElementById("el-key").value || "").trim();
+        const elVoice = document.getElementById("el-voice").value;
+        const ttsEl = document.getElementById("tts-indicator");
+        ttsEl.classList.add("active");
+
+        if (elKey) {
+          // ── ElevenLabs path ──
+          try {
+            const resp = await fetch(
+              `https://api.elevenlabs.io/v1/text-to-speech/${elVoice}`,
+              {
+                method: "POST",
+                headers: {
+                  "xi-api-key": elKey,
+                  "Content-Type": "application/json",
+                  Accept: "audio/mpeg",
+                },
+                body: JSON.stringify({
+                  text: decoded,
+                  model_id: "eleven_monolingual_v1",
+                  voice_settings: {
+                    stability: 0.4,
+                    similarity_boost: 0.8,
+                    style: 0.2,
+                    use_speaker_boost: true,
+                  },
+                }),
+              },
+            );
+            if (!resp.ok) throw new Error("ElevenLabs error: " + resp.status);
+            const audioBlob = await resp.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            audio.onended = () => {
+              ttsEl.classList.remove("active");
+              URL.revokeObjectURL(audioUrl);
+            };
+            audio.onerror = () => {
+              ttsEl.classList.remove("active");
+            };
+            audio.play();
+          } catch (e) {
+            // CORS or network error — fall back to browser TTS silently
+            browserTTS(decoded, ttsEl);
+          }
+        } else {
+          // ── Browser TTS fallback ──
+          browserTTS(decoded, ttsEl);
         }
+      }
+
+      function browserTTS(text, indicator) {
+        if (!("speechSynthesis" in window)) {
+          indicator.classList.remove("active");
+          return;
+        }
+        window.speechSynthesis.cancel();
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.rate = 0.88;
+        utt.pitch = 0.9;
+        utt.volume = 1;
+        const voices = window.speechSynthesis.getVoices();
+        const preferred = voices.find(
+          (v) =>
+            v.name.toLowerCase().includes("samantha") ||
+            v.name.toLowerCase().includes("karen") ||
+            v.name.toLowerCase().includes("moira") ||
+            v.name.toLowerCase().includes("victoria"),
+        );
+        if (preferred) utt.voice = preferred;
+        utt.onend = () => indicator.classList.remove("active");
+        utt.onerror = () => indicator.classList.remove("active");
+        window.speechSynthesis.speak(utt);
+      }
+
+      function saveElKey(val) {
+        try {
+          localStorage.setItem("whisper_el_key", val);
+        } catch (e) {}
+      }
+      function saveElVoice(val) {
+        try {
+          localStorage.setItem("whisper_el_voice", val);
+        } catch (e) {}
       }
 
       // ══════════════════════════════════════════════════════════
