@@ -43,9 +43,12 @@ function msgToBits(msg, passphrase) {
 function embedBits(samples, bits) {
   const out = new Float32Array(samples.length);
   for (let i = 0; i < samples.length; i++) {
-    let s16 = Math.max(-32768, Math.min(32767, Math.round(samples[i] * 32767)));
+    // Use 32768 for both directions so the roundtrip is consistent:
+    // embed:   float → round(float * 32768) → clear LSB → set bit → store as float/32768
+    // extract: float * 32768 → round → & 1  (browser decodeAudioData also divides by 32768)
+    let s16 = Math.max(-32768, Math.min(32767, Math.round(samples[i] * 32768)));
     if (i < bits.length) s16 = (s16 & ~1) | bits[i];
-    out[i] = s16 / 32767;
+    out[i] = s16 / 32768;
   }
   return out;
 }
@@ -53,7 +56,10 @@ function embedBits(samples, bits) {
 function extractBits(samples, count) {
   const bits = [];
   for (let i = 0; i < count && i < samples.length; i++)
-    bits.push(Math.round(samples[i] * 32767) & 1);
+    // Must match embedBits: multiply by 32768, not 32767.
+    // Browser's decodeAudioData normalises int16 → float by dividing by 32768,
+    // so multiplying back by 32768 recovers the exact integer, preserving the LSB.
+    bits.push(Math.round(samples[i] * 32768) & 1);
   return bits;
 }
 
@@ -127,9 +133,11 @@ function buildWav(samples, sr) {
   ws(36, "data");
   v.setUint32(40, n * 2, true);
   for (let i = 0; i < n; i++)
+    // buildWav writes the int16 that embedBits already computed (stored as float/32768),
+    // so we recover it by multiplying back by 32768.
     v.setInt16(
       44 + i * 2,
-      Math.max(-32768, Math.min(32767, Math.round(samples[i] * 32767))),
+      Math.max(-32768, Math.min(32767, Math.round(samples[i] * 32768))),
       true,
     );
   return buf;
