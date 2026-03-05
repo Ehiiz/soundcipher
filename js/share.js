@@ -101,6 +101,11 @@ const Share = {
       return;
     }
 
+    // ── FIX: read passphrase exactly as buildEncodedWav() does ──
+    const passphrase = (
+      document.getElementById("enc-passphrase").value || ""
+    ).trim();
+
     const btn = document.getElementById("share-btn");
     const base = window.location.href.split("#")[0];
     btn.disabled = true;
@@ -125,10 +130,19 @@ const Share = {
         raw = synthesise(App.selectedSound, SR, DUR);
       }
 
-      // Step 2 — embed message in LSB
-      UI.setProgress("enc-fill", "enc-label", 30, "Embedding message…");
+      // Step 2 — embed message in LSB (with passphrase if set)
+      UI.setProgress(
+        "enc-fill",
+        "enc-label",
+        30,
+        passphrase ? "Encrypting & embedding…" : "Embedding message…",
+      );
       await UI.sleep(20);
-      const bits = msgToBits(msg);
+
+      // ── FIX: pass passphrase to msgToBits so MAGIC_LOCKED header is written
+      //         and the payload is XOR-encrypted before embedding ──
+      const bits = msgToBits(msg, passphrase);
+
       if (bits.length > raw.length) {
         UI.toast("Message too long", "err");
         btn.disabled = false;
@@ -162,9 +176,14 @@ const Share = {
       document.getElementById("share-url").value = shareUrl;
       document.getElementById("share-result").style.display = "block";
       UI.setShareHint(
-        "✓ Short link — works everywhere. Audio stored for 30 days.",
+        passphrase
+          ? "✓ Link ready — recipient will need the passcode to reveal."
+          : "✓ Short link — works everywhere. Audio stored for 30 days.",
       );
-      UI.toast("Link generated!", "ok");
+      UI.toast(
+        passphrase ? "Link generated — passcode protected!" : "Link generated!",
+        "ok",
+      );
     } catch (e) {
       console.error("Share failed:", e);
       UI.toast(e.message || "Could not generate link", "err");
