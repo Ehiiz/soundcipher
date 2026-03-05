@@ -4,11 +4,11 @@
   MIT License © 2025 thedigitalauteur
 */
 
-const MAGIC_OPEN = [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1];
+const MAGIC_OPEN   = [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1];
 const MAGIC_LOCKED = [1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0];
 
-const SCAN_NONE = "none";
-const SCAN_OPEN = "open";
+const SCAN_NONE   = "none";
+const SCAN_OPEN   = "open";
 const SCAN_LOCKED = "locked";
 
 function deriveKey(passphrase, length) {
@@ -28,10 +28,10 @@ function xorMessage(msg, passphrase) {
 
 function msgToBits(msg, passphrase) {
   passphrase = passphrase || "";
-  const magic = passphrase ? MAGIC_LOCKED.slice() : MAGIC_OPEN.slice();
+  const magic   = passphrase ? MAGIC_LOCKED.slice() : MAGIC_OPEN.slice();
   const payload = passphrase ? xorMessage(msg, passphrase) : msg;
-  const bits = magic.slice();
-  const len = payload.length;
+  const bits    = magic.slice();
+  const len     = payload.length;
   for (let i = 15; i >= 0; i--) bits.push((len >> i) & 1);
   for (let ci = 0; ci < payload.length; ci++) {
     const c = payload.charCodeAt(ci);
@@ -65,17 +65,9 @@ function extractBits(samples, count) {
 
 function scanBits(rawBits) {
   const header = rawBits.slice(0, 16);
-  if (
-    MAGIC_OPEN.every(function (b, i) {
-      return b === header[i];
-    })
-  )
+  if (MAGIC_OPEN.every(function (b, i) { return b === header[i]; }))
     return SCAN_OPEN;
-  if (
-    MAGIC_LOCKED.every(function (b, i) {
-      return b === header[i];
-    })
-  )
+  if (MAGIC_LOCKED.every(function (b, i) { return b === header[i]; }))
     return SCAN_LOCKED;
   return SCAN_NONE;
 }
@@ -103,7 +95,11 @@ function decodeBits(rawBits, passphrase) {
   if (type === SCAN_LOCKED) {
     const decrypted = xorMessage(raw, passphrase);
     const valid = decrypted.split("").every(function (c) {
-      return c.charCodeAt(0) >= 32 && c.charCodeAt(0) < 127;
+      const code = c.charCodeAt(0);
+      // Allow printable ASCII (32-126) plus common whitespace:
+      // \t (9), \n (10), \r (13) — all valid in a textarea message.
+      // Null bytes (0) and other control chars strongly indicate a wrong passphrase.
+      return (code >= 32 && code < 127) || code === 9 || code === 10 || code === 13;
     });
     if (!valid) return { status: "wrong_passphrase", message: null };
     return { status: SCAN_OPEN, message: decrypted };
