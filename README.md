@@ -66,7 +66,7 @@ git clone https://github.com/thedigitalauteur/whisper.git
 cd whisper
 
 # Open in browser
-open whisper.html
+open index.html
 ```
 
 That's it.
@@ -136,7 +136,7 @@ The share link approach encodes the entire WAV file as base64 in the URL hash fr
 ## Project structure
 
 ```
-whisper.html    ← The entire application (HTML + CSS + JS, single file)
+index.html      ← The entire application (HTML + CSS + JS, single file)
 README.md       ← This file
 LICENSE         ← MIT License
 ```
