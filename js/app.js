@@ -1,54 +1,34 @@
 /*
   Whisper — app.js
-  Global state, encode/download action, reveal/decode pipeline, app init
+  Global state, encode/download, reveal/decode pipeline, init
   MIT License © 2025 thedigitalauteur
 */
 
-// ── Global state ──
-const App = {
-  selectedSound: "rain",
-};
+const App = { selectedSound: "rain" };
 
 // ── Encode & download ──
 async function encodeAndDownload() {
   const btn = document.getElementById("enc-btn");
   btn.disabled = true;
   UI.showProgress("enc-prog");
-
   const wavBuf = await buildEncodedWav();
-
   if (wavBuf) {
     UI.setProgress("enc-fill", "enc-label", 100, "Done — downloading…");
     const blob = new Blob([wavBuf], { type: "audio/wav" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `whisper-${App.selectedSound}-${Date.now()}.wav`;
+    a.download = "whisper-" + App.selectedSound + "-" + Date.now() + ".wav";
     a.click();
     URL.revokeObjectURL(url);
     UI.toast("Downloaded!", "ok");
   }
-
   btn.disabled = false;
   UI.hideProgress("enc-prog", 2000);
 }
 
-// ── Reveal / decode ──
-async function revealMessage() {
-  if (!rxBuffer) {
-    UI.toast("Upload a .wav file first", "err");
-    return;
-  }
-
-  const btn = document.getElementById("reveal-btn");
-  const resultBox = document.getElementById("result-box");
-  const resultText = document.getElementById("result-text");
-
-  btn.disabled = true;
-  UI.showProgress("dec-prog");
-  resultBox.style.display = "none";
-
-  // Phase 1 — animated waveform scan
+// ── Shared scan logic — runs the waveform animation and extracts bits ──
+async function scanAudio() {
   const playhead = document.getElementById("wv-playhead");
   const scanOverlay = document.getElementById("wv-scan");
   const canvas = document.getElementById("rx-wv");
@@ -60,7 +40,7 @@ async function revealMessage() {
 
   const scanDur = 1800,
     scanStart = performance.now();
-  await new Promise((resolve) => {
+  await new Promise(function (resolve) {
     function animate(now) {
       const pct = Math.min(1, (now - scanStart) / scanDur);
       playhead.style.left = pct * W + "px";
@@ -72,24 +52,43 @@ async function revealMessage() {
     requestAnimationFrame(animate);
   });
 
-  // Phase 2 — extract bits
-  UI.setProgress("dec-fill", "dec-label", 55, "Extracting bits…");
-  await UI.sleep(80);
-
-  const samples = rxBuffer.getChannelData(0);
-  const rawBits = extractBits(samples, 16 + 16 + 500 * 8 + 16);
-
-  UI.setProgress("dec-fill", null, 70);
-
-  // Phase 3 — decode
-  const decoded = decodeBits(rawBits);
-
-  // Reset scan visuals
   playhead.style.left = "0px";
   playhead.classList.remove("active");
   scanOverlay.style.width = "0%";
 
-  if (decoded === null) {
+  UI.setProgress("dec-fill", "dec-label", 55, "Extracting bits…");
+  await UI.sleep(80);
+
+  const samples = rxBuffer.getChannelData(0);
+  return extractBits(samples, 16 + 16 + 500 * 8);
+}
+
+// ── Reveal message (called by button and passphrase submit) ──
+async function revealMessage(passphrase) {
+  if (!rxBuffer) {
+    UI.toast("Upload a .wav file first", "err");
+    return;
+  }
+
+  passphrase = passphrase || "";
+  const btn = document.getElementById("reveal-btn");
+  const resultBox = document.getElementById("result-box");
+  const resultText = document.getElementById("result-text");
+  const passcodePrompt = document.getElementById("passcode-prompt");
+
+  btn.disabled = true;
+  UI.showProgress("dec-prog");
+  resultBox.style.display = "none";
+  passcodePrompt.style.display = "none";
+
+  // Phase 1 — scan
+  const rawBits = await scanAudio();
+  UI.setProgress("dec-fill", null, 70);
+
+  // Phase 2 — decode
+  const result = decodeBits(rawBits, passphrase);
+
+  if (result.status === SCAN_NONE) {
     UI.setProgress("dec-fill", "dec-label", 100, "No hidden message found.");
     resultBox.style.display = "block";
     resultText.innerHTML =
@@ -99,28 +98,51 @@ async function revealMessage() {
     return;
   }
 
+  if (result.status === SCAN_LOCKED) {
+    // Message exists but needs passphrase — show prompt
+    UI.setProgress("dec-fill", "dec-label", 100, "🔒 Passcode required.");
+    UI.hideProgress("dec-prog", 600);
+    passcodePrompt.style.display = "block";
+    setTimeout(function () {
+      document.getElementById("dec-passphrase").focus();
+    }, 320);
+    btn.disabled = false;
+    UI.toast("This message is passcode protected", "ok");
+    return;
+  }
+
+  if (result.status === "wrong_passphrase") {
+    UI.setProgress("dec-fill", "dec-label", 100, "✗ Wrong passcode.");
+    passcodePrompt.style.display = "block";
+    document.getElementById("dec-passphrase").value = "";
+    document.getElementById("dec-passphrase").focus();
+    btn.disabled = false;
+    UI.toast("Wrong passcode — try again", "err");
+    return;
+  }
+
+  // Success
+  const decoded = result.message;
   UI.setProgress(
     "dec-fill",
     "dec-label",
     88,
-    `Decrypted — ${decoded.length} characters…`,
+    "Decrypted — " + decoded.length + " characters…",
   );
   await UI.sleep(80);
   UI.setProgress(
     "dec-fill",
     "dec-label",
     100,
-    `✓ ${decoded.length} characters revealed`,
+    "✓ " + decoded.length + " characters revealed",
   );
 
-  // Phase 4 — typewriter
   resultBox.style.display = "block";
   await typewriterReveal(decoded, resultText);
 
   btn.disabled = false;
-  UI.toast(`Message revealed — ${decoded.length} characters`, "ok");
+  UI.toast("Message revealed — " + decoded.length + " characters", "ok");
 
-  // Phase 5 — voice readout
   await UI.sleep(400);
   const ttsEl = document.getElementById("tts-indicator");
   ttsEl.classList.add("active");
@@ -128,14 +150,43 @@ async function revealMessage() {
   ttsEl.classList.remove("active");
 }
 
+// ── Submit passphrase ──
+async function submitPasscode() {
+  const pass = (document.getElementById("dec-passphrase").value || "").trim();
+  if (!pass) {
+    UI.toast("Enter a passcode", "err");
+    return;
+  }
+  document.getElementById("dec-passphrase").value = "";
+  await revealMessage(pass);
+}
+
+// ── Load Unreal Speech key from env via /api/config ──
+async function loadConfig() {
+  try {
+    const resp = await fetch("/api/config");
+    if (!resp.ok) return;
+    const cfg = await resp.json();
+    if (cfg.unrealSpeechKey) {
+      const input = document.getElementById("us-key");
+      if (input && !input.value) {
+        input.value = cfg.unrealSpeechKey;
+        TTS.setProvider("unrealspeech");
+      }
+    }
+  } catch (e) {
+    // /api/config not available locally without vercel dev — silently fall back
+  }
+}
+
 // ── Init ──
-window.addEventListener("load", () => {
+window.addEventListener("load", function () {
   TTS.restoreSettings();
   initDragDrop();
-
-  // Set contact mailto without Cloudflare mangling it
   const link = document.getElementById("contact-link");
   if (link) link.href = "mailto:" + "thedigitalauteur" + "@" + "gmail.com";
-
-  setTimeout(() => Share.loadFromHash(), 300);
+  loadConfig();
+  setTimeout(function () {
+    Share.loadFromHash();
+  }, 300);
 });

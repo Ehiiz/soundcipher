@@ -258,7 +258,40 @@
         <!-- Step 3: Encode -->
         <div class="section">
           <div class="step-label">
-            <span class="step-num">3</span> Encode &amp; share
+            <span class="step-num">3</span> Passcode (optional)
+          </div>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              margin-bottom: 20px;
+            "
+          >
+            <input
+              type="password"
+              id="enc-passphrase"
+              placeholder="Add a passcode to lock this message…"
+              style="
+                flex: 1;
+                background: var(--paper2);
+                border: 1px solid var(--border);
+                padding: 11px 14px;
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 11px;
+                color: var(--ink);
+                outline: none;
+                letter-spacing: 0.08em;
+              "
+            />
+            <div
+              style="font-size: 10px; color: var(--dim); white-space: nowrap"
+            >
+              Leave blank<br />for no lock
+            </div>
+          </div>
+          <div class="step-label">
+            <span class="step-num">4</span> Encode &amp; share
           </div>
           <div class="prog-wrap" id="enc-prog">
             <div class="prog-bar">
@@ -524,6 +557,74 @@
           >
             🔍 Reveal Hidden Message
           </button>
+
+          <!-- Auto-appears when locked message detected -->
+          <div
+            id="passcode-prompt"
+            style="display: none; margin-top: 16px; animation: up 0.28s ease"
+          >
+            <div style="background: var(--ink); padding: 20px 22px">
+              <div
+                style="
+                  font-size: 9px;
+                  letter-spacing: 0.32em;
+                  text-transform: uppercase;
+                  color: var(--gold);
+                  margin-bottom: 12px;
+                "
+              >
+                🔒 Passcode Required
+              </div>
+              <div
+                style="
+                  font-family: &quot;Cormorant Garamond&quot;, serif;
+                  font-size: 15px;
+                  font-style: italic;
+                  color: rgba(245, 240, 232, 0.7);
+                  margin-bottom: 16px;
+                  line-height: 1.6;
+                "
+              >
+                This message is locked. Enter the passcode to reveal it.
+              </div>
+              <div style="display: flex; gap: 8px">
+                <input
+                  type="password"
+                  id="dec-passphrase"
+                  placeholder="Enter passcode…"
+                  onkeydown="if (event.key === 'Enter') submitPasscode();"
+                  style="
+                    flex: 1;
+                    background: rgba(255, 255, 255, 0.08);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    padding: 11px 14px;
+                    font-family: &quot;DM Mono&quot;, monospace;
+                    font-size: 11px;
+                    color: var(--paper);
+                    outline: none;
+                    letter-spacing: 0.08em;
+                  "
+                />
+                <button
+                  onclick="submitPasscode()"
+                  style="
+                    background: var(--gold);
+                    color: #fff;
+                    border: none;
+                    padding: 11px 20px;
+                    font-family: &quot;DM Mono&quot;, monospace;
+                    font-size: 10px;
+                    letter-spacing: 0.18em;
+                    text-transform: uppercase;
+                    cursor: pointer;
+                    white-space: nowrap;
+                  "
+                >
+                  Unlock
+                </button>
+              </div>
+            </div>
+          </div>
 
           <div class="result-box" id="result-box">
             <div class="result-badge">Decoded Message</div>
