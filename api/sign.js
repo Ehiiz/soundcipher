@@ -40,12 +40,13 @@ export default async function handler(req, res) {
   const timestamp = Math.round(Date.now() / 1000);
   const folder = "whisper";
 
-  // Params to sign — must be sorted alphabetically
-  const paramsToSign = `folder=${folder}&timestamp=${timestamp}`;
+  // Params to sign — must be sorted alphabetically, secret appended at end
+  // Cloudinary signature spec: SHA1(param_string + api_secret)
+  const paramsToSign = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
 
-  // HMAC-SHA256 signature
+  // SHA-1 digest (not HMAC — Cloudinary appends the secret to the string)
   const signature = crypto
-    .createHmac("sha256", apiSecret)
+    .createHash("sha1")
     .update(paramsToSign)
     .digest("hex");
 
