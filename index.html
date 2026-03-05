@@ -1198,6 +1198,122 @@
       </div>
     </div>
 
+    <!-- ── Footer ── -->
+    <footer
+      style="
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 32px 28px 60px;
+        text-align: center;
+        position: relative;
+      "
+    >
+      <div
+        style="
+          border-top: 1px solid var(--border);
+          padding-top: 32px;
+          position: relative;
+        "
+      >
+        <div
+          style="
+            position: absolute;
+            top: -9px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--paper);
+            padding: 0 14px;
+            color: var(--gold);
+            font-size: 10px;
+          "
+        >
+          ◆
+        </div>
+
+        <div
+          style="
+            font-family: &quot;Cormorant Garamond&quot;, serif;
+            font-size: 15px;
+            font-style: italic;
+            color: var(--dim);
+            letter-spacing: 0.04em;
+            line-height: 2;
+          "
+        >
+          Whisper hides secrets inside sound —<br />invisible to the ear,
+          visible only to those who know where to look.
+        </div>
+
+        <div
+          style="
+            margin-top: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+          "
+        >
+          <div
+            style="height: 1px; width: 48px; background: var(--border)"
+          ></div>
+          <span
+            style="
+              font-size: 9px;
+              letter-spacing: 0.35em;
+              text-transform: uppercase;
+              color: var(--dim);
+            "
+            >by thedigitalauteur</span
+          >
+          <div
+            style="height: 1px; width: 48px; background: var(--border)"
+          ></div>
+        </div>
+
+        <a
+          href="mailto:thedigitalauteur@gmail.com"
+          style="
+            display: inline-block;
+            margin-top: 16px;
+            padding: 11px 28px;
+            border: 1px solid var(--border);
+            font-family: &quot;DM Mono&quot;, monospace;
+            font-size: 11px;
+            letter-spacing: 0.18em;
+            color: var(--ink);
+            text-decoration: none;
+            background: var(--paper2);
+            transition: all 0.2s;
+          "
+          onmouseover="
+            this.style.background = 'var(--ink)';
+            this.style.color = 'var(--paper)';
+            this.style.borderColor = 'var(--ink)';
+          "
+          onmouseout="
+            this.style.background = 'var(--paper2)';
+            this.style.color = 'var(--ink)';
+            this.style.borderColor = 'var(--border)';
+          "
+        >
+          ✉ thedigitalauteur@gmail.com
+        </a>
+
+        <div
+          style="
+            margin-top: 14px;
+            font-size: 9px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--dim);
+            opacity: 0.55;
+          "
+        >
+          Have an idea? Want to collaborate? Get in touch.
+        </div>
+      </div>
+    </footer>
+
     <div class="toast" id="toast"></div>
 
     <script>
