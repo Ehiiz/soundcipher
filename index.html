@@ -1,3 +1,8 @@
+<!--
+  Whisper — Hide secret messages inside sound
+  LSB audio steganography — https://github.com/thedigitalauteur/whisper
+  MIT License © 2025 thedigitalauteur | Built with Claude (Anthropic)
+-->
 <!doctype html>
 <html lang="en">
   <head>
@@ -8,674 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <style>
-      :root {
-        --ink: #1a1714;
-        --paper: #f5f0e8;
-        --paper2: #ede7d9;
-        --paper3: #e3dccf;
-        --gold: #b8860b;
-        --gold-light: #d4a017;
-        --rust: #7a2e10;
-        --sage: #3a5e3a;
-        --mist: #6b7b8d;
-        --dim: #9a9080;
-        --border: rgba(26, 23, 20, 0.14);
-      }
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      body {
-        background: var(--paper);
-        color: var(--ink);
-        font-family: "DM Mono", monospace;
-        min-height: 100vh;
-      }
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.022'/%3E%3C/svg%3E");
-        pointer-events: none;
-        z-index: 0;
-      }
-      .app {
-        max-width: 680px;
-        margin: 0 auto;
-        padding: 52px 28px 90px;
-        position: relative;
-        z-index: 1;
-      }
-      header {
-        text-align: center;
-        margin-bottom: 48px;
-        padding-bottom: 32px;
-        border-bottom: 1px solid var(--border);
-        position: relative;
-      }
-      header::after {
-        content: "◆";
-        position: absolute;
-        bottom: -9px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: var(--paper);
-        padding: 0 14px;
-        color: var(--gold);
-        font-size: 10px;
-      }
-      .wordmark {
-        font-family: "Cormorant Garamond", serif;
-        font-size: clamp(56px, 14vw, 92px);
-        font-weight: 300;
-        font-style: italic;
-        letter-spacing: 0.14em;
-        color: var(--ink);
-        line-height: 1;
-      }
-      .sub {
-        font-size: 10px;
-        font-weight: 300;
-        letter-spacing: 0.38em;
-        text-transform: uppercase;
-        color: var(--dim);
-        margin-top: 10px;
-      }
-      .mode-strip {
-        display: flex;
-        border: 1px solid var(--border);
-        margin-bottom: 32px;
-      }
-      .mode-btn {
-        flex: 1;
-        padding: 15px 10px;
-        background: var(--paper2);
-        border: none;
-        cursor: pointer;
-        font-family: "DM Mono", monospace;
-        font-size: 11px;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--dim);
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 9px;
-      }
-      .mode-btn + .mode-btn {
-        border-left: 1px solid var(--border);
-      }
-      .mode-btn.active {
-        background: var(--ink);
-        color: var(--paper);
-      }
-      .explainer {
-        background: var(--paper2);
-        border: 1px solid var(--border);
-        border-left: 3px solid var(--gold);
-        padding: 16px 20px;
-        margin-bottom: 30px;
-        display: flex;
-        gap: 14px;
-        align-items: flex-start;
-      }
-      .exp-icon {
-        font-size: 18px;
-        flex-shrink: 0;
-        padding-top: 1px;
-      }
-      .exp-body {
-        font-size: 11px;
-        line-height: 1.85;
-        color: var(--mist);
-      }
-      .exp-body strong {
-        color: var(--ink);
-        font-weight: 500;
-      }
-      .step-label {
-        font-size: 9px;
-        font-weight: 500;
-        letter-spacing: 0.38em;
-        text-transform: uppercase;
-        color: var(--dim);
-        margin-bottom: 11px;
-        display: flex;
-        align-items: center;
-        gap: 9px;
-      }
-      .step-num {
-        width: 17px;
-        height: 17px;
-        border: 1px solid var(--gold);
-        color: var(--gold);
-        font-size: 9px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
-      .section {
-        margin-bottom: 28px;
-      }
-      .sound-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 9px;
-      }
-      @media (max-width: 460px) {
-        .sound-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-      .sound-card {
-        border: 1px solid var(--border);
-        padding: 14px 16px;
-        cursor: pointer;
-        transition: all 0.15s;
-        background: var(--paper2);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        position: relative;
-        overflow: hidden;
-        user-select: none;
-      }
-      .sound-card:hover {
-        background: var(--paper3);
-        border-color: rgba(26, 23, 20, 0.25);
-      }
-      .sound-card.selected {
-        background: var(--ink);
-        color: var(--paper);
-        border-color: var(--ink);
-      }
-      .sound-card.selected .sound-desc {
-        color: rgba(245, 240, 232, 0.45);
-      }
-      .sound-card.playing::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        height: 2px;
-        background: var(--gold-light);
-        animation: shimmer 2.5s linear infinite;
-      }
-      @keyframes shimmer {
-        from {
-          width: 0%;
-        }
-        to {
-          width: 100%;
-        }
-      }
-      .s-emoji {
-        font-size: 20px;
-        flex-shrink: 0;
-      }
-      .s-info {
-        flex: 1;
-        min-width: 0;
-      }
-      .sound-name {
-        font-size: 12px;
-        font-weight: 500;
-        letter-spacing: 0.03em;
-      }
-      .sound-desc {
-        font-size: 10px;
-        color: var(--dim);
-        font-weight: 300;
-        margin-top: 1px;
-      }
-      .preview-btn {
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        border: 1px solid currentColor;
-        background: transparent;
-        cursor: pointer;
-        font-size: 9px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0.45;
-        transition: opacity 0.15s;
-        color: inherit;
-        flex-shrink: 0;
-      }
-      .preview-btn:hover {
-        opacity: 1;
-      }
-      .sound-card.upload-card {
-        border-style: dashed;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 18px 12px;
-        gap: 6px;
-      }
-      .sound-card.upload-card input[type="file"] {
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        cursor: pointer;
-        width: 100%;
-        height: 100%;
-      }
-      textarea {
-        width: 100%;
-        background: var(--paper2);
-        border: 1px solid var(--border);
-        color: var(--ink);
-        font-family: "Cormorant Garamond", serif;
-        font-size: 18px;
-        padding: 16px 18px;
-        resize: none;
-        height: 108px;
-        outline: none;
-        transition: border-color 0.2s;
-        line-height: 1.65;
-      }
-      textarea:focus {
-        border-color: var(--ink);
-      }
-      textarea::placeholder {
-        color: var(--dim);
-        font-style: italic;
-      }
-      .char-hint {
-        text-align: right;
-        font-size: 10px;
-        color: var(--dim);
-        margin-top: 5px;
-      }
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 9px;
-        padding: 13px 28px;
-        font-family: "DM Mono", monospace;
-        font-size: 11px;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        cursor: pointer;
-        border: none;
-        transition: all 0.15s;
-        width: 100%;
-      }
-      .btn-dark {
-        background: var(--ink);
-        color: var(--paper);
-      }
-      .btn-dark:hover {
-        background: #2d2a26;
-      }
-      .btn-dark:disabled,
-      .btn-gold:disabled {
-        opacity: 0.35;
-        cursor: not-allowed;
-      }
-      .btn-gold {
-        background: var(--gold);
-        color: #fff;
-      }
-      .btn-gold:hover {
-        background: var(--gold-light);
-      }
-      .prog-wrap {
-        margin-bottom: 14px;
-        display: none;
-      }
-      .prog-bar {
-        height: 2px;
-        background: var(--border);
-      }
-      .prog-fill {
-        height: 100%;
-        background: var(--gold);
-        width: 0%;
-        transition: width 0.2s;
-      }
-      .prog-label {
-        font-size: 10px;
-        color: var(--dim);
-        margin-top: 5px;
-        letter-spacing: 0.08em;
-      }
-      .upload-zone {
-        border: 1px dashed var(--border);
-        padding: 34px 20px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.2s;
-        background: var(--paper2);
-        position: relative;
-      }
-      .upload-zone:hover,
-      .upload-zone.over {
-        border-color: var(--ink);
-        background: var(--paper3);
-      }
-      .upload-zone input[type="file"] {
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        cursor: pointer;
-        width: 100%;
-        height: 100%;
-      }
-      .up-icon {
-        font-size: 26px;
-        margin-bottom: 8px;
-      }
-      .up-main {
-        font-family: "Cormorant Garamond", serif;
-        font-size: 16px;
-        font-style: italic;
-        color: var(--dim);
-      }
-      .up-sub {
-        font-size: 10px;
-        color: var(--dim);
-        letter-spacing: 0.1em;
-        margin-top: 3px;
-      }
-      .up-file {
-        font-size: 11px;
-        color: var(--ink);
-        font-weight: 500;
-        margin-top: 8px;
-      }
-      .player {
-        background: var(--paper2);
-        border: 1px solid var(--border);
-        padding: 14px 18px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-      }
-      .play-btn {
-        width: 34px;
-        height: 34px;
-        background: var(--ink);
-        color: var(--paper);
-        border: none;
-        cursor: pointer;
-        font-size: 11px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        transition: background 0.15s;
-      }
-      .play-btn:hover {
-        background: #2d2a26;
-      }
-      .player-meta {
-        flex: 1;
-        min-width: 0;
-      }
-      .player-name {
-        font-size: 11px;
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .player-time {
-        font-size: 10px;
-        color: var(--dim);
-        margin-top: 2px;
-      }
-      .seek-bar {
-        width: 100%;
-        height: 2px;
-        background: var(--border);
-        margin-top: 8px;
-        cursor: pointer;
-      }
-      .seek-fill {
-        height: 100%;
-        background: var(--gold);
-        width: 0%;
-      }
-      .wv-wrap {
-        position: relative;
-        margin-top: 8px;
-        overflow: hidden;
-      }
-      canvas.wv {
-        width: 100%;
-        height: 46px;
-        display: block;
-        background: var(--paper2);
-        border: 1px solid var(--border);
-      }
-      .wv-playhead {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: var(--gold);
-        box-shadow: 0 0 8px rgba(184, 134, 11, 0.7);
-        pointer-events: none;
-        display: none;
-        left: 0;
-      }
-      .wv-playhead.active {
-        display: block;
-      }
-      .wv-scan-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        background: rgba(184, 134, 11, 0.06);
-        pointer-events: none;
-        width: 0%;
-      }
-      .result-box {
-        background: var(--ink);
-        color: var(--paper);
-        padding: 22px 26px;
-        margin-top: 18px;
-        position: relative;
-        display: none;
-      }
-      .result-badge {
-        position: absolute;
-        top: -1px;
-        left: 18px;
-        background: var(--gold);
-        color: #fff;
-        font-size: 8px;
-        letter-spacing: 0.3em;
-        padding: 3px 10px;
-        text-transform: uppercase;
-      }
-      .result-text {
-        font-family: "Cormorant Garamond", serif;
-        font-size: 20px;
-        font-style: italic;
-        line-height: 1.65;
-        margin-top: 10px;
-        word-break: break-word;
-      }
-      .typewriter-cursor {
-        display: inline-block;
-        width: 2px;
-        height: 1.1em;
-        background: var(--gold);
-        vertical-align: text-bottom;
-        margin-left: 2px;
-        animation: blink 0.7s step-end infinite;
-      }
-      @keyframes blink {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0;
-        }
-      }
-      .tts-indicator {
-        display: none;
-        align-items: center;
-        gap: 8px;
-        margin-top: 14px;
-        font-size: 10px;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--gold);
-      }
-      .tts-indicator.active {
-        display: flex;
-      }
-      .tts-bars {
-        display: flex;
-        gap: 2px;
-        align-items: flex-end;
-        height: 14px;
-      }
-      .tts-bar {
-        width: 3px;
-        background: var(--gold);
-        border-radius: 1px;
-        animation: ttsbar 0.6s ease-in-out infinite alternate;
-      }
-      .tts-bar:nth-child(2) {
-        animation-delay: 0.1s;
-      }
-      .tts-bar:nth-child(3) {
-        animation-delay: 0.2s;
-      }
-      .tts-bar:nth-child(4) {
-        animation-delay: 0.15s;
-      }
-      .tts-bar:nth-child(5) {
-        animation-delay: 0.05s;
-      }
-      @keyframes ttsbar {
-        from {
-          height: 3px;
-        }
-        to {
-          height: 14px;
-        }
-      }
-      .tts-strip {
-        display: flex;
-        border: 1px solid var(--border);
-        overflow: hidden;
-        margin-bottom: 10px;
-      }
-      .tts-strip button {
-        flex: 1;
-        padding: 9px 6px;
-        font-family: "DM Mono", monospace;
-        font-size: 9px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        cursor: pointer;
-        border: none;
-        background: var(--paper2);
-        color: var(--dim);
-        transition: all 0.15s;
-      }
-      .tts-strip button + button {
-        border-left: 1px solid var(--border);
-      }
-      .tts-strip button.active {
-        background: var(--ink);
-        color: var(--paper);
-      }
-      .api-input {
-        width: 100%;
-        background: var(--paper2);
-        border: 1px solid var(--border);
-        padding: 10px 12px;
-        font-family: "DM Mono", monospace;
-        font-size: 10px;
-        color: var(--ink);
-        outline: none;
-        margin-bottom: 6px;
-      }
-      .voice-row {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 8px;
-      }
-      .voice-row input {
-        flex: 1;
-        min-width: 0;
-      }
-      .voice-row select {
-        background: var(--paper2);
-        border: 1px solid var(--border);
-        padding: 10px 8px;
-        font-family: "DM Mono", monospace;
-        font-size: 10px;
-        color: var(--ink);
-        outline: none;
-        cursor: pointer;
-      }
-      hr {
-        border: none;
-        border-top: 1px solid var(--border);
-        margin: 24px 0;
-      }
-      .panel {
-        display: none;
-      }
-      .panel.active {
-        display: block;
-        animation: up 0.28s ease;
-      }
-      @keyframes up {
-        from {
-          opacity: 0;
-          transform: translateY(7px);
-        }
-        to {
-          opacity: 1;
-          transform: none;
-        }
-      }
-      .toast {
-        position: fixed;
-        bottom: 24px;
-        left: 50%;
-        transform: translateX(-50%) translateY(60px);
-        background: var(--ink);
-        color: var(--paper);
-        padding: 11px 22px;
-        font-size: 11px;
-        letter-spacing: 0.12em;
-        transition: transform 0.28s ease;
-        white-space: nowrap;
-        z-index: 999;
-        pointer-events: none;
-      }
-      .toast.show {
-        transform: translateX(-50%) translateY(0);
-      }
-      .toast.err {
-        background: var(--rust);
-      }
-      .toast.ok {
-        background: var(--sage);
-      }
-    </style>
+    <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
     <div class="app">
@@ -685,29 +23,35 @@
       </header>
 
       <div class="mode-strip">
-        <button class="mode-btn active" id="btn-hide" onclick="setMode('hide')">
+        <button
+          class="mode-btn active"
+          id="btn-hide"
+          onclick="UI.setMode('hide')"
+        >
           🔒 Hide a Message
         </button>
-        <button class="mode-btn" id="btn-reveal" onclick="setMode('reveal')">
+        <button class="mode-btn" id="btn-reveal" onclick="UI.setMode('reveal')">
           🔍 Reveal a Message
         </button>
       </div>
 
-      <!-- HIDE PANEL -->
+      <!-- ══ HIDE PANEL ══ -->
       <div class="panel active" id="panel-hide">
         <div class="explainer">
           <div class="exp-icon">💡</div>
           <div class="exp-body">
             <strong>How it works:</strong> Pick a sound, write your secret
             message, then download or share. The audio sounds completely normal
-            — your message is hidden inside the data.
+            — your message is hidden inside the data, undetectable by ear.
           </div>
         </div>
 
+        <!-- Step 1: Choose sound -->
         <div class="section">
           <div class="step-label">
             <span class="step-num">1</span> Choose a cover sound
           </div>
+
           <div
             style="
               font-size: 9px;
@@ -783,6 +127,7 @@
               </button>
             </div>
           </div>
+
           <div
             style="
               font-size: 9px;
@@ -858,6 +203,7 @@
               </button>
             </div>
           </div>
+
           <div
             style="
               font-size: 9px;
@@ -893,6 +239,7 @@
           </div>
         </div>
 
+        <!-- Step 2: Message -->
         <div class="section">
           <div class="step-label">
             <span class="step-num">2</span> Type your secret message
@@ -904,10 +251,12 @@
             oninput="
               document.getElementById('cc').textContent = this.value.length
             "
-          ></textarea>
+          >
+          </textarea>
           <div class="char-hint"><span id="cc">0</span> / 500 characters</div>
         </div>
 
+        <!-- Step 3: Encode -->
         <div class="section">
           <div class="step-label">
             <span class="step-num">3</span> Encode &amp; share
@@ -927,14 +276,14 @@
             >
               🔒 Download .wav
             </button>
-            <!-- <button
+            <button
               class="btn btn-dark"
               id="share-btn"
-              onclick="encodeAndShare()"
+              onclick="Share.generate()"
               style="flex: 1; background: var(--gold)"
             >
               🔗 Share Link
-            </button> -->
+            </button>
           </div>
           <div id="share-result" style="display: none; margin-top: 4px">
             <div
@@ -966,7 +315,7 @@
                 "
               />
               <button
-                onclick="copyShareLink()"
+                onclick="Share.copyLink()"
                 style="
                   background: var(--ink);
                   color: var(--paper);
@@ -989,6 +338,7 @@
                 margin-top: 6px;
                 line-height: 1.7;
               "
+              id="share-hint"
             >
               Send this link — recipient opens it in Whisper to decode.
             </div>
@@ -1007,8 +357,9 @@
           </div>
         </div>
       </div>
+      <!-- end panel-hide -->
 
-      <!-- REVEAL PANEL -->
+      <!-- ══ REVEAL PANEL ══ -->
       <div class="panel" id="panel-reveal">
         <div class="explainer">
           <div class="exp-icon">💡</div>
@@ -1019,6 +370,7 @@
           </div>
         </div>
 
+        <!-- Step 1: Upload -->
         <div class="section">
           <div class="step-label">
             <span class="step-num">1</span> Upload the .wav file
@@ -1036,10 +388,12 @@
           </div>
         </div>
 
+        <!-- Step 2: Reveal -->
         <div class="section" id="rx-section" style="display: none">
           <div class="step-label">
             <span class="step-num">2</span> Listen or reveal
           </div>
+
           <div class="player">
             <button class="play-btn" id="rx-play-btn" onclick="togglePlay()">
               ▶
@@ -1052,12 +406,16 @@
               </div>
             </div>
           </div>
+
           <div class="wv-wrap">
             <canvas class="wv" id="rx-wv"></canvas>
             <div class="wv-scan-overlay" id="wv-scan"></div>
             <div class="wv-playhead" id="wv-playhead"></div>
           </div>
+
           <hr />
+
+          <!-- TTS -->
           <div style="margin-bottom: 14px">
             <div
               style="
@@ -1071,18 +429,18 @@
               🔊 Voice Readout (optional)
             </div>
             <div class="tts-strip">
-              <button id="tts-btn-browser" onclick="setTTSProvider('browser')">
+              <button id="tts-btn-browser" onclick="TTS.setProvider('browser')">
                 Browser
               </button>
               <button
                 id="tts-btn-unrealspeech"
-                onclick="setTTSProvider('unrealspeech')"
+                onclick="TTS.setProvider('unrealspeech')"
               >
                 Unreal Speech
               </button>
               <button
                 id="tts-btn-elevenlabs"
-                onclick="setTTSProvider('elevenlabs')"
+                onclick="TTS.setProvider('elevenlabs')"
               >
                 ElevenLabs
               </button>
@@ -1101,12 +459,12 @@
                   id="us-key"
                   type="password"
                   placeholder="Unreal Speech API key…"
-                  oninput="saveTTSKey('us-key', 'whisper_us_key')"
+                  oninput="TTS.saveKey('us-key', 'whisper_us_key')"
                   style="margin-bottom: 0"
                 />
                 <select
                   id="us-voice"
-                  onchange="saveTTSKey('us-voice', 'whisper_us_voice')"
+                  onchange="TTS.saveKey('us-voice', 'whisper_us_voice')"
                 >
                   <option value="Scarlett">Scarlett</option>
                   <option value="Liv">Liv</option>
@@ -1120,8 +478,7 @@
                 style="font-size: 10px; color: var(--dim); line-height: 1.75"
               >
                 Free tier at
-                <span style="color: var(--gold)">unrealspeech.com</span> — works
-                directly in browser.
+                <span style="color: var(--gold)">unrealspeech.com</span>
               </div>
             </div>
             <div id="tts-cfg-elevenlabs" style="display: none">
@@ -1131,12 +488,12 @@
                   id="el-key"
                   type="password"
                   placeholder="ElevenLabs API key…"
-                  oninput="saveTTSKey('el-key', 'whisper_el_key')"
+                  oninput="TTS.saveKey('el-key', 'whisper_el_key')"
                   style="margin-bottom: 0"
                 />
                 <select
                   id="el-voice"
-                  onchange="saveTTSKey('el-voice', 'whisper_el_voice')"
+                  onchange="TTS.saveKey('el-voice', 'whisper_el_voice')"
                 >
                   <option value="EXAVITQu4vr4xnSDxMaL">Sarah</option>
                   <option value="21m00Tcm4TlvDq8ikWAM">Rachel</option>
@@ -1148,17 +505,19 @@
               <div
                 style="font-size: 10px; color: var(--dim); line-height: 1.75"
               >
-                Get a free key at
+                Free key at
                 <span style="color: var(--gold)">elevenlabs.io</span>
               </div>
             </div>
           </div>
+
           <div class="prog-wrap" id="dec-prog">
             <div class="prog-bar">
               <div class="prog-fill" id="dec-fill"></div>
             </div>
             <div class="prog-label" id="dec-label"></div>
           </div>
+
           <button
             class="btn btn-gold"
             id="reveal-btn"
@@ -1166,6 +525,7 @@
           >
             🔍 Reveal Hidden Message
           </button>
+
           <div class="result-box" id="result-box">
             <div class="result-badge">Decoded Message</div>
             <div class="result-text" id="result-text"></div>
@@ -1182,9 +542,11 @@
           </div>
         </div>
       </div>
+      <!-- end panel-reveal -->
     </div>
     <!-- end .app -->
 
+    <!-- ── Footer ── -->
     <footer
       style="
         max-width: 680px;
@@ -1297,1031 +659,13 @@
     </footer>
 
     <div class="toast" id="toast"></div>
-    <script>
-      // ── State ──
-      const SR = 44100,
-        DUR = 12;
-      const MAGIC = [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1];
-      let selectedSound = "rain",
-        audioCtx = null;
-      let previewSrc = null,
-        previewingId = null;
-      let rxBuffer = null,
-        rxSrc = null,
-        rxPlaying = false;
-      let rxStartTime = 0,
-        rxOffset = 0,
-        rxRaf = null;
-      let customAudioBuffer = null,
-        customAudioName = "";
-      let ttsProvider = "browser";
 
-      // Set contact link without Cloudflare mangling it
-      (function () {
-        var u = "thedigitalauteur",
-          d = "gmail.com",
-          el = document.getElementById("contact-link");
-        if (el) el.href = "mailto:" + u + "@" + d;
-      })();
-
-      function getCtx() {
-        if (!audioCtx)
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)({
-            sampleRate: SR,
-          });
-        if (audioCtx.state === "suspended") audioCtx.resume();
-        return audioCtx;
-      }
-
-      // ── UI ──
-      function setMode(m) {
-        ["hide", "reveal"].forEach((k) => {
-          document
-            .getElementById("panel-" + k)
-            .classList.toggle("active", k === m);
-          document
-            .getElementById("btn-" + k)
-            .classList.toggle("active", k === m);
-        });
-      }
-
-      function toast(msg, type = "") {
-        var el = document.getElementById("toast");
-        el.textContent = msg;
-        el.className = "toast show " + type;
-        setTimeout(function () {
-          el.className = "toast";
-        }, 3200);
-      }
-
-      function sleep(ms) {
-        return new Promise(function (r) {
-          setTimeout(r, ms);
-        });
-      }
-
-      function selectSound(card, id) {
-        document.querySelectorAll(".sound-card").forEach(function (c) {
-          c.classList.remove("selected");
-        });
-        card.classList.add("selected");
-        selectedSound = id;
-      }
-
-      function setTTSProvider(p) {
-        ttsProvider = p;
-        ["browser", "unrealspeech", "elevenlabs"].forEach(function (k) {
-          var btn = document.getElementById("tts-btn-" + k);
-          var cfg = document.getElementById("tts-cfg-" + k);
-          var active = k === p;
-          btn.classList.toggle("active", active);
-          cfg.style.display = active ? "block" : "none";
-        });
-        try {
-          localStorage.setItem("whisper_tts_provider", p);
-        } catch (e) {}
-      }
-
-      function saveTTSKey(inputId, storageKey) {
-        try {
-          localStorage.setItem(
-            storageKey,
-            document.getElementById(inputId).value,
-          );
-        } catch (e) {}
-      }
-
-      // ── Pink noise ──
-      function makePink() {
-        var b0 = 0,
-          b1 = 0,
-          b2 = 0,
-          b3 = 0,
-          b4 = 0,
-          b5 = 0,
-          b6 = 0;
-        return function () {
-          var w = Math.random() * 2 - 1;
-          b0 = 0.99886 * b0 + w * 0.0555179;
-          b1 = 0.99332 * b1 + w * 0.0750759;
-          b2 = 0.969 * b2 + w * 0.153852;
-          b3 = 0.8665 * b3 + w * 0.3104856;
-          b4 = 0.55 * b4 + w * 0.5329522;
-          b5 = -0.7616 * b5 - w * 0.016898;
-          var p = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11;
-          b6 = w * 0.115926;
-          return p;
-        };
-      }
-
-      // ── Synthesis ──
-      function synthesise(type, sr, dur) {
-        var N = Math.floor(sr * dur),
-          d = new Float32Array(N),
-          TAU = 2 * Math.PI;
-
-        if (type === "rain") {
-          var pink = makePink();
-          var drops = [];
-          for (var k = 0; k < dur * 40; k++)
-            drops.push({
-              t: Math.random() * dur,
-              f: 800 + Math.random() * 2200,
-              amp: 0.04 + Math.random() * 0.08,
-            });
-          for (var i = 0; i < N; i++) {
-            var t = i / sr,
-              mist = pink() * 0.55,
-              sizzle = (Math.random() * 2 - 1) * 0.054;
-            var dropsV = 0;
-            for (var di = 0; di < drops.length; di++) {
-              var dt = t - drops[di].t;
-              if (dt >= 0 && dt < 0.045)
-                dropsV +=
-                  Math.sin(TAU * drops[di].f * dt) *
-                  Math.exp(-dt * 120) *
-                  drops[di].amp;
-            }
-            var tSlot = t % 5.2,
-              thunder =
-                Math.sin(t * 18) *
-                Math.sin(t * 22) *
-                Math.exp(-tSlot * 0.7) *
-                (tSlot < 3 ? 0.12 : 0);
-            d[i] = Math.max(-1, Math.min(1, mist + sizzle + dropsV + thunder));
-          }
-        } else if (type === "forest") {
-          var pink = makePink();
-          var birds = [
-            { t: 0.4, f0: 3400, f1: 4200, dur: 0.12, a: 0.18 },
-            { t: 1.1, f0: 2800, f1: 2800, dur: 0.08, a: 0.12 },
-            { t: 1.8, f0: 4100, f1: 3200, dur: 0.15, a: 0.2 },
-            { t: 2.5, f0: 3600, f1: 4500, dur: 0.1, a: 0.15 },
-            { t: 3.3, f0: 2200, f1: 2600, dur: 0.2, a: 0.14 },
-            { t: 4.0, f0: 5000, f1: 4000, dur: 0.09, a: 0.16 },
-            { t: 4.8, f0: 3400, f1: 4200, dur: 0.12, a: 0.18 },
-            { t: 5.6, f0: 2800, f1: 3400, dur: 0.16, a: 0.13 },
-            { t: 6.5, f0: 4500, f1: 5200, dur: 0.08, a: 0.17 },
-            { t: 7.2, f0: 3100, f1: 2600, dur: 0.14, a: 0.19 },
-            { t: 8.1, f0: 2200, f1: 2200, dur: 0.25, a: 0.11 },
-            { t: 8.9, f0: 4000, f1: 4800, dur: 0.11, a: 0.15 },
-            { t: 9.7, f0: 3400, f1: 4200, dur: 0.12, a: 0.18 },
-            { t: 10.5, f0: 2900, f1: 3700, dur: 0.13, a: 0.16 },
-            { t: 11.3, f0: 4100, f1: 3500, dur: 0.1, a: 0.14 },
-          ];
-          for (var i = 0; i < N; i++) {
-            var t = i / sr,
-              wind =
-                pink() *
-                (0.22 +
-                  0.14 * Math.sin(TAU * 0.07 * t) +
-                  0.08 * Math.sin(TAU * 0.19 * t));
-            var stream =
-              (Math.random() * 2 - 1) *
-              0.06 *
-              (0.7 + 0.3 * Math.sin(TAU * 0.04 * t));
-            var birdV = 0;
-            for (var bi = 0; bi < birds.length; bi++) {
-              var b = birds[bi],
-                dt = t - b.t;
-              if (dt >= 0 && dt < b.dur) {
-                var prog = dt / b.dur,
-                  freq = b.f0 + (b.f1 - b.f0) * prog;
-                birdV +=
-                  Math.sin(TAU * freq * t) *
-                  Math.exp(-dt * 18) *
-                  b.a *
-                  (1 - prog * 0.3);
-              }
-            }
-            d[i] = Math.max(-1, Math.min(1, wind + stream + birdV));
-          }
-        } else if (type === "ocean") {
-          var pink = makePink();
-          for (var i = 0; i < N; i++) {
-            var t = i / sr,
-              wp = 4.2,
-              wph = (t % wp) / wp;
-            var waveEnv = Math.pow(Math.sin(Math.PI * wph), 2.5) * 0.6 + 0.1;
-            var noise = pink() * waveEnv * 0.7;
-            var foam =
-              (Math.random() * 2 - 1) *
-              0.25 *
-              (wph > 0.45 && wph < 0.65
-                ? Math.exp(-(wph - 0.5) * 20 + 10 * Math.abs(wph - 0.5))
-                : 0);
-            var gt = (t % 7.8) - 2.5,
-              gull = 0;
-            if (gt > 0 && gt < 0.6)
-              gull =
-                Math.sin(TAU * (1400 + 200 * Math.sin(TAU * 6 * gt)) * t) *
-                Math.exp(-gt * 6) *
-                0.06;
-            d[i] = Math.max(-1, Math.min(1, noise + foam + gull));
-          }
-        } else if (type === "fire") {
-          var pink = makePink();
-          var pops = [];
-          for (var k = 0; k < dur * 25; k++)
-            pops.push({
-              t: Math.random() * dur,
-              amp: 0.05 + Math.random() * 0.25,
-              decay: 30 + Math.random() * 80,
-            });
-          for (var i = 0; i < N; i++) {
-            var t = i / sr,
-              rumble = pink() * 0.4 * (0.8 + 0.2 * Math.sin(TAU * 1.3 * t));
-            var crackle =
-              (Math.random() * 2 - 1) * 0.15 * (Math.random() < 0.02 ? 3 : 1);
-            var popV = 0;
-            for (var pi = 0; pi < pops.length; pi++) {
-              var p = pops[pi],
-                dt = t - p.t;
-              if (dt >= 0 && dt < 0.08)
-                popV +=
-                  (Math.random() * 2 - 1) * Math.exp(-dt * p.decay) * p.amp;
-            }
-            d[i] = Math.max(-1, Math.min(1, rumble + crackle * 0.4 + popV));
-          }
-        } else if (type === "lofi") {
-          var bpm = 72,
-            beat = 60 / bpm,
-            bar = beat * 4;
-          var chords = [
-            [220, 261.6, 329.6, 440],
-            [174.6, 220, 261.6, 349.2],
-            [261.6, 329.6, 392, 523.2],
-            [196, 246.9, 293.6, 392],
-          ];
-          var pink = makePink();
-          for (var i = 0; i < N; i++) {
-            var t = i / sr,
-              ci = Math.floor((t % bar) / beat) % 4,
-              chord = chords[ci];
-            var harm = 0;
-            chord.forEach(function (f, ni) {
-              var det = 1 + [0.003, -0.002, 0.001, -0.003][ni];
-              harm += Math.sin(TAU * f * det * t) * 0.08;
-              harm += Math.sin(TAU * f * 2 * det * t) * 0.025;
-            });
-            var bp = t % beat,
-              barp = t % bar;
-            var kick =
-              barp < 0.06 || Math.abs(barp - beat * 2) < 0.06
-                ? Math.sin(TAU * 50 * Math.exp(-bp * 30) * t) *
-                  Math.exp(-bp * 25) *
-                  0.4
-                : 0;
-            var snare =
-              Math.abs(barp - beat) < 0.05 || Math.abs(barp - beat * 3) < 0.05
-                ? (Math.random() * 2 - 1) * Math.exp(-(barp % beat) * 40) * 0.2
-                : 0;
-            var hihat =
-              t % (beat / 2) < 0.015 ? (Math.random() * 2 - 1) * 0.06 : 0;
-            var vinyl =
-              (Math.random() < 0.0007 ? (Math.random() * 2 - 1) * 0.4 : 0) +
-              (Math.random() * 2 - 1) * 0.01;
-            var wobble = 0.88 + 0.12 * Math.sin(TAU * 0.31 * t);
-            d[i] = Math.max(
-              -1,
-              Math.min(
-                1,
-                harm * wobble + kick + snare + hihat + vinyl + pink() * 0.04,
-              ),
-            );
-          }
-        } else if (type === "jazz") {
-          var bpm = 88,
-            beat = 60 / bpm,
-            bar = beat * 4;
-          var bassNotes = [
-            110, 123.5, 130.8, 146.8, 164.8, 146.8, 130.8, 123.5,
-          ];
-          var pianoV = [
-            [277.2, 349.2, 415.3],
-            [246.9, 311.1, 392],
-            [220, 277.2, 329.6],
-            [196, 246.9, 311.1],
-          ];
-          var pink = makePink();
-          for (var i = 0; i < N; i++) {
-            var t = i / sr,
-              bi = Math.floor(t / beat),
-              bf = bassNotes[bi % bassNotes.length],
-              bp = t % beat;
-            var bass = Math.sin(TAU * bf * t) * Math.exp(-bp * 8) * 0.35;
-            var barp = t % bar,
-              ci = Math.floor(barp / beat) % 4,
-              piano = 0;
-            if (bp < 0.2) {
-              pianoV[ci].forEach(function (f) {
-                piano += Math.sin(TAU * f * t) * Math.exp(-bp * 6) * 0.09;
-                piano += Math.sin(TAU * f * 2 * t) * Math.exp(-bp * 10) * 0.03;
-              });
-            }
-            var snare =
-              Math.abs(barp - beat) < 0.3 || Math.abs(barp - beat * 3) < 0.3
-                ? pink() * 0.18 * Math.exp(-(barp % beat) * 5)
-                : 0;
-            var ride =
-              bp < 0.04
-                ? (Math.random() * 2 - 1) * Math.exp(-bp * 50) * 0.12
-                : 0;
-            d[i] = Math.max(
-              -1,
-              Math.min(1, bass + piano + snare + ride + pink() * 0.04),
-            );
-          }
-        } else if (type === "ambient") {
-          var layers = [
-            { freqs: [110, 138.6, 164.8], det: [0, 0.004, -0.003] },
-            { freqs: [55, 69.3, 82.4], det: [0.002, -0.001, 0.003] },
-          ];
-          var pink = makePink();
-          for (var i = 0; i < N; i++) {
-            var t = i / sr,
-              s = 0;
-            layers.forEach(function (layer, li) {
-              var env = 0.5 + 0.5 * Math.sin(TAU * 0.04 * t + li * 1.2);
-              layer.freqs.forEach(function (f, fi) {
-                s += Math.sin(TAU * f * (1 + layer.det[fi]) * t) * 0.1 * env;
-                s +=
-                  Math.sin(TAU * f * 2 * (1 + layer.det[fi]) * t) * 0.03 * env;
-              });
-            });
-            var filt =
-              0.7 + 0.3 * Math.sin(TAU * 0.07 * t) * Math.sin(TAU * 0.13 * t);
-            var bt = t % 8.5,
-              bell =
-                bt < 0.6
-                  ? Math.sin(TAU * 523.2 * t) * Math.exp(-bt * 4) * 0.07
-                  : 0;
-            var bt2 = (t + 4.2) % 8.5;
-            bell +=
-              bt2 < 0.6
-                ? Math.sin(TAU * 659.2 * t) * Math.exp(-bt2 * 4) * 0.05
-                : 0;
-            d[i] = Math.max(-1, Math.min(1, s * filt + bell + pink() * 0.025));
-          }
-        } else {
-          for (var i = 0; i < N; i++) d[i] = (Math.random() * 2 - 1) * 0.45;
-        }
-        return d;
-      }
-
-      // ── Preview ──
-      function previewSound(e, id) {
-        e.stopPropagation();
-        var ctx = getCtx();
-        if (previewSrc) {
-          try {
-            previewSrc.stop();
-          } catch (e) {}
-          previewSrc = null;
-        }
-        document.querySelectorAll(".sound-card").forEach(function (c) {
-          c.classList.remove("playing");
-        });
-        if (previewingId === id) {
-          previewingId = null;
-          return;
-        }
-        previewingId = id;
-        document
-          .querySelector('[data-id="' + id + '"]')
-          .classList.add("playing");
-        var buf = ctx.createBuffer(1, SR * 4, SR);
-        buf.copyToChannel(synthesise(id, SR, 4), 0);
-        previewSrc = ctx.createBufferSource();
-        previewSrc.buffer = buf;
-        previewSrc.connect(ctx.destination);
-        previewSrc.start();
-        previewSrc.onended = function () {
-          document.querySelectorAll(".sound-card").forEach(function (c) {
-            c.classList.remove("playing");
-          });
-          previewingId = null;
-        };
-      }
-
-      async function handleCustomSound(input) {
-        var file = input.files[0];
-        if (!file) return;
-        customAudioName = file.name;
-        var ctx = getCtx();
-        var buf = await file.arrayBuffer();
-        try {
-          customAudioBuffer = await ctx.decodeAudioData(buf);
-          document.getElementById("custom-sound-desc").textContent =
-            "✓ " + file.name;
-          document.querySelectorAll(".sound-card").forEach(function (c) {
-            c.classList.remove("selected");
-          });
-          document
-            .getElementById("custom-sound-card")
-            .classList.add("selected");
-          selectedSound = "custom";
-          toast("Custom sound loaded", "ok");
-        } catch (e) {
-          toast("Could not decode audio", "err");
-        }
-      }
-
-      // ── Steganography ──
-      function msgToBits(msg) {
-        var bits = MAGIC.slice();
-        var len = msg.length;
-        for (var i = 15; i >= 0; i--) bits.push((len >> i) & 1);
-        for (var ci = 0; ci < msg.length; ci++) {
-          var c = msg.charCodeAt(ci);
-          for (var b = 7; b >= 0; b--) bits.push((c >> b) & 1);
-        }
-        return bits;
-      }
-
-      function embedBits(samples, bits) {
-        var out = new Float32Array(samples.length);
-        for (var i = 0; i < samples.length; i++) {
-          var s16 = Math.max(
-            -32768,
-            Math.min(32767, Math.round(samples[i] * 32767)),
-          );
-          if (i < bits.length) s16 = (s16 & ~1) | bits[i];
-          out[i] = s16 / 32767;
-        }
-        return out;
-      }
-
-      function extractBits(samples, count) {
-        var bits = [];
-        for (var i = 0; i < count && i < samples.length; i++)
-          bits.push(Math.round(samples[i] * 32767) & 1);
-        return bits;
-      }
-
-      // ── WAV builder ──
-      function buildWav(samples, sr) {
-        var n = samples.length,
-          buf = new ArrayBuffer(44 + n * 2),
-          v = new DataView(buf);
-        var ws = function (o, s) {
-          for (var i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i));
-        };
-        ws(0, "RIFF");
-        v.setUint32(4, 36 + n * 2, true);
-        ws(8, "WAVE");
-        ws(12, "fmt ");
-        v.setUint32(16, 16, true);
-        v.setUint16(20, 1, true);
-        v.setUint16(22, 1, true);
-        v.setUint32(24, sr, true);
-        v.setUint32(28, sr * 2, true);
-        v.setUint16(32, 2, true);
-        v.setUint16(34, 16, true);
-        ws(36, "data");
-        v.setUint32(40, n * 2, true);
-        for (var i = 0; i < n; i++)
-          v.setInt16(
-            44 + i * 2,
-            Math.max(-32768, Math.min(32767, Math.round(samples[i] * 32767))),
-            true,
-          );
-        return buf;
-      }
-
-      // ── Shared encode logic ──
-      async function buildEncodedWav() {
-        var msg = document.getElementById("secret-msg").value.trim();
-        if (!msg) {
-          toast("Type a message first", "err");
-          return null;
-        }
-        var pf = document.getElementById("enc-fill"),
-          pl = document.getElementById("enc-label");
-        pl.textContent = "Synthesising audio…";
-        pf.style.width = "15%";
-        await sleep(20);
-        var raw;
-        if (selectedSound === "custom") {
-          if (!customAudioBuffer) {
-            toast("Upload a custom sound first", "err");
-            return null;
-          }
-          var offCtx = new OfflineAudioContext(1, Math.floor(SR * DUR), SR);
-          var src = offCtx.createBufferSource();
-          src.buffer = customAudioBuffer;
-          src.loop = true;
-          src.connect(offCtx.destination);
-          src.start(0);
-          var rendered = await offCtx.startRendering();
-          raw = rendered.getChannelData(0);
-        } else {
-          raw = synthesise(selectedSound, SR, DUR);
-        }
-        pf.style.width = "45%";
-        pl.textContent = "Embedding message…";
-        await sleep(20);
-        var bits = msgToBits(msg);
-        if (bits.length > raw.length) {
-          toast("Message too long", "err");
-          return null;
-        }
-        var encoded = embedBits(raw, bits);
-        pf.style.width = "80%";
-        pl.textContent = "Building WAV…";
-        await sleep(20);
-        return buildWav(encoded, SR);
-      }
-
-      async function encodeAndDownload() {
-        var btn = document.getElementById("enc-btn"),
-          pw = document.getElementById("enc-prog");
-        btn.disabled = true;
-        pw.style.display = "block";
-        var wavBuf = await buildEncodedWav();
-        if (wavBuf) {
-          document.getElementById("enc-fill").style.width = "100%";
-          document.getElementById("enc-label").textContent =
-            "Done — downloading…";
-          var blob = new Blob([wavBuf], { type: "audio/wav" });
-          var url = URL.createObjectURL(blob);
-          var a = document.createElement("a");
-          a.href = url;
-          a.download = "whisper-" + selectedSound + "-" + Date.now() + ".wav";
-          a.click();
-          URL.revokeObjectURL(url);
-          toast("Downloaded!", "ok");
-        }
-        setTimeout(function () {
-          btn.disabled = false;
-          pw.style.display = "none";
-          document.getElementById("enc-fill").style.width = "0%";
-        }, 2000);
-      }
-
-      async function encodeAndShare() {
-        var btn = document.getElementById("share-btn"),
-          pw = document.getElementById("enc-prog");
-        btn.disabled = true;
-        pw.style.display = "block";
-        document.getElementById("share-result").style.display = "none";
-        var wavBuf = await buildEncodedWav();
-        if (wavBuf) {
-          document.getElementById("enc-fill").style.width = "90%";
-          document.getElementById("enc-label").textContent =
-            "Encoding to base64…";
-          await sleep(20);
-          var bytes = new Uint8Array(wavBuf),
-            binary = "";
-          for (var i = 0; i < bytes.length; i++)
-            binary += String.fromCharCode(bytes[i]);
-          var b64 = btoa(binary);
-          var shareUrl = window.location.href.split("#")[0] + "#whisper=" + b64;
-          document.getElementById("enc-fill").style.width = "100%";
-          document.getElementById("enc-label").textContent = "Link ready!";
-          document.getElementById("share-url").value = shareUrl;
-          document.getElementById("share-result").style.display = "block";
-          toast("Share link generated", "ok");
-        }
-        setTimeout(function () {
-          btn.disabled = false;
-          pw.style.display = "none";
-          document.getElementById("enc-fill").style.width = "0%";
-        }, 2000);
-      }
-
-      function copyShareLink() {
-        var input = document.getElementById("share-url");
-        input.select();
-        navigator.clipboard
-          .writeText(input.value)
-          .then(function () {
-            toast("Copied!", "ok");
-          })
-          .catch(function () {
-            document.execCommand("copy");
-            toast("Copied!", "ok");
-          });
-      }
-
-      // ── Upload & playback ──
-      function handleUpload(input) {
-        var file = input.files[0];
-        if (!file) return;
-        document.getElementById("up-filename").textContent = "📄 " + file.name;
-        var reader = new FileReader();
-        reader.onload = async function (e) {
-          var ctx = getCtx();
-          try {
-            rxBuffer = await ctx.decodeAudioData(e.target.result.slice(0));
-            document.getElementById("rx-fname").textContent = file.name;
-            document.getElementById("rx-section").style.display = "block";
-            document.getElementById("result-box").style.display = "none";
-            rxOffset = 0;
-            rxPlaying = false;
-            document.getElementById("rx-play-btn").textContent = "▶";
-            requestAnimationFrame(function () {
-              requestAnimationFrame(function () {
-                drawWaveform(rxBuffer);
-              });
-            });
-            toast("File loaded — press Reveal to decode", "ok");
-          } catch (err) {
-            toast("Could not read file", "err");
-          }
-        };
-        reader.readAsArrayBuffer(file);
-      }
-
-      function drawWaveform(buf) {
-        var canvas = document.getElementById("rx-wv");
-        var W = canvas.offsetWidth,
-          H = canvas.offsetHeight;
-        if (!W || !H) return;
-        canvas.width = W * devicePixelRatio;
-        canvas.height = H * devicePixelRatio;
-        var c = canvas.getContext("2d");
-        c.scale(devicePixelRatio, devicePixelRatio);
-        var data = buf.getChannelData(0),
-          step = Math.max(1, Math.ceil(data.length / W));
-        c.fillStyle = "#ede7d9";
-        c.fillRect(0, 0, W, H);
-        c.strokeStyle = "#b8860b";
-        c.lineWidth = 1;
-        c.beginPath();
-        for (var x = 0; x < W; x++) {
-          var mn = 1,
-            mx = -1;
-          for (var j = 0; j < step; j++) {
-            var s = data[x * step + j] || 0;
-            if (s < mn) mn = s;
-            if (s > mx) mx = s;
-          }
-          c.moveTo(x, (1 - (mx + 1) / 2) * H);
-          c.lineTo(x, (1 - (mn + 1) / 2) * H);
-        }
-        c.stroke();
-      }
-
-      function togglePlay() {
-        if (!rxBuffer) return;
-        var ctx = getCtx();
-        if (rxPlaying) {
-          rxOffset += ctx.currentTime - rxStartTime;
-          try {
-            rxSrc.stop();
-          } catch (e) {}
-          rxSrc = null;
-          rxPlaying = false;
-          document.getElementById("rx-play-btn").textContent = "▶";
-          cancelAnimationFrame(rxRaf);
-        } else {
-          if (rxOffset >= rxBuffer.duration) rxOffset = 0;
-          rxSrc = ctx.createBufferSource();
-          rxSrc.buffer = rxBuffer;
-          rxSrc.connect(ctx.destination);
-          rxSrc.start(0, rxOffset);
-          rxStartTime = ctx.currentTime;
-          rxPlaying = true;
-          document.getElementById("rx-play-btn").textContent = "⏸";
-          rxSrc.onended = function () {
-            rxPlaying = false;
-            rxOffset = 0;
-            document.getElementById("rx-play-btn").textContent = "▶";
-            cancelAnimationFrame(rxRaf);
-          };
-          tickPlayer();
-        }
-      }
-
-      function tickPlayer() {
-        var ctx = getCtx(),
-          elapsed = rxOffset + (ctx.currentTime - rxStartTime),
-          dur = rxBuffer.duration;
-        var pct = Math.min(100, (elapsed / dur) * 100);
-        document.getElementById("rx-seekfill").style.width = pct + "%";
-        var m = Math.floor(elapsed / 60),
-          s = Math.floor(elapsed % 60),
-          dm = Math.floor(dur / 60),
-          ds = Math.floor(dur % 60);
-        document.getElementById("rx-time").textContent =
-          m +
-          ":" +
-          (s < 10 ? "0" : "") +
-          s +
-          " / " +
-          dm +
-          ":" +
-          (ds < 10 ? "0" : "") +
-          ds;
-        rxRaf = requestAnimationFrame(tickPlayer);
-      }
-
-      function seekTo(e) {
-        if (!rxBuffer) return;
-        rxOffset =
-          (e.offsetX / e.currentTarget.offsetWidth) * rxBuffer.duration;
-        if (rxPlaying) {
-          try {
-            rxSrc.stop();
-          } catch (e) {}
-          rxPlaying = false;
-          togglePlay();
-        }
-      }
-
-      // ── Reveal / decode ──
-      async function revealMessage() {
-        if (!rxBuffer) {
-          toast("Upload a .wav file first", "err");
-          return;
-        }
-        var btn = document.getElementById("reveal-btn");
-        var pw = document.getElementById("dec-prog"),
-          pf = document.getElementById("dec-fill"),
-          pl = document.getElementById("dec-label");
-        var resultBox = document.getElementById("result-box"),
-          resultText = document.getElementById("result-text");
-        btn.disabled = true;
-        pw.style.display = "block";
-        resultBox.style.display = "none";
-
-        // Scan animation
-        var playhead = document.getElementById("wv-playhead"),
-          scanOverlay = document.getElementById("wv-scan");
-        var canvas = document.getElementById("rx-wv");
-        drawWaveform(rxBuffer);
-        await sleep(30);
-        var W = canvas.offsetWidth || 600;
-        playhead.classList.add("active");
-        pf.style.width = "5%";
-        pl.textContent = "Scanning audio for hidden data…";
-        var scanDur = 1800,
-          scanStart = performance.now();
-        await new Promise(function (resolve) {
-          function animateScan(now) {
-            var pct = Math.min(1, (now - scanStart) / scanDur);
-            playhead.style.left = pct * W + "px";
-            scanOverlay.style.width = pct * 100 + "%";
-            pf.style.width = 5 + pct * 45 + "%";
-            if (pct < 1) requestAnimationFrame(animateScan);
-            else resolve();
-          }
-          requestAnimationFrame(animateScan);
-        });
-
-        pl.textContent = "Extracting bits…";
-        pf.style.width = "55%";
-        await sleep(80);
-        var samples = rxBuffer.getChannelData(0);
-        var rawBits = extractBits(samples, 16 + 16 + 500 * 8 + 16);
-        pf.style.width = "65%";
-
-        var magic = rawBits.slice(0, 16);
-        if (
-          !MAGIC.every(function (b, i) {
-            return b === magic[i];
-          })
-        ) {
-          playhead.classList.remove("active");
-          scanOverlay.style.width = "0%";
-          pf.style.width = "100%";
-          pl.textContent = "No hidden message found.";
-          resultBox.style.display = "block";
-          resultText.innerHTML =
-            '<span style="color:rgba(245,240,232,0.4);font-size:14px;font-style:italic;">No hidden message found.<br>Make sure the file was created with Whisper.</span>';
-          btn.disabled = false;
-          toast("No Whisper message found", "err");
-          return;
-        }
-
-        var msgLen = 0;
-        for (var i = 16; i < 32; i++) msgLen = (msgLen << 1) | rawBits[i];
-        pf.style.width = "75%";
-        pl.textContent =
-          "Signature confirmed — decoding " + msgLen + " characters…";
-        await sleep(150);
-
-        var decoded = "";
-        for (var ci = 0; ci < msgLen; ci++) {
-          var code = 0;
-          for (var b = 0; b < 8; b++)
-            code = (code << 1) | (rawBits[32 + ci * 8 + b] || 0);
-          if (code >= 32 && code < 127) decoded += String.fromCharCode(code);
-        }
-
-        pf.style.width = "88%";
-        pl.textContent = "Decrypted — rendering…";
-        await sleep(80);
-        playhead.style.left = "0px";
-        playhead.classList.remove("active");
-        scanOverlay.style.width = "0%";
-        pf.style.width = "100%";
-        pl.textContent = "✓ " + decoded.length + " characters revealed";
-
-        resultBox.style.display = "block";
-        resultText.innerHTML = "";
-        var cursor = document.createElement("span");
-        cursor.className = "typewriter-cursor";
-        resultText.appendChild(cursor);
-        var charDelay = Math.max(18, Math.min(60, 1200 / decoded.length));
-        for (var ci = 0; ci < decoded.length; ci++) {
-          var span = document.createElement("span");
-          span.textContent = decoded[ci];
-          resultText.insertBefore(span, cursor);
-          await sleep(charDelay);
-        }
-        await sleep(600);
-        cursor.remove();
-        btn.disabled = false;
-        toast("Message revealed — " + decoded.length + " characters", "ok");
-
-        // TTS
-        await sleep(400);
-        var ttsEl = document.getElementById("tts-indicator");
-        ttsEl.classList.add("active");
-        await speakText(decoded);
-        ttsEl.classList.remove("active");
-      }
-
-      // ── TTS ──
-      async function speakText(text) {
-        if (ttsProvider === "unrealspeech") {
-          var key = (document.getElementById("us-key").value || "").trim();
-          var voice = document.getElementById("us-voice").value;
-          if (key) {
-            try {
-              var resp = await fetch("https://api.v7.unrealspeech.com/speech", {
-                method: "POST",
-                headers: {
-                  Authorization: "Bearer " + key,
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  Text: text,
-                  VoiceId: voice,
-                  Bitrate: "192k",
-                  Speed: "0",
-                  Pitch: "1",
-                  TimestampType: "sentence",
-                }),
-              });
-              if (!resp.ok) throw new Error(resp.status);
-              var json = await resp.json();
-              await playAudioUrl(json.OutputUri);
-              return;
-            } catch (e) {
-              console.warn("Unreal Speech failed:", e);
-            }
-          }
-        } else if (ttsProvider === "elevenlabs") {
-          var key = (document.getElementById("el-key").value || "").trim();
-          var voice = document.getElementById("el-voice").value;
-          if (key) {
-            try {
-              var resp = await fetch(
-                "https://api.elevenlabs.io/v1/text-to-speech/" + voice,
-                {
-                  method: "POST",
-                  headers: {
-                    "xi-api-key": key,
-                    "Content-Type": "application/json",
-                    Accept: "audio/mpeg",
-                  },
-                  body: JSON.stringify({
-                    text: text,
-                    model_id: "eleven_monolingual_v1",
-                    voice_settings: { stability: 0.4, similarity_boost: 0.8 },
-                  }),
-                },
-              );
-              if (!resp.ok) throw new Error(resp.status);
-              var blob = await resp.blob(),
-                url = URL.createObjectURL(blob);
-              await playAudioUrl(url, true);
-              return;
-            } catch (e) {
-              console.warn("ElevenLabs failed:", e);
-            }
-          }
-        }
-        await browserTTS(text);
-      }
-
-      function playAudioUrl(url, revoke) {
-        return new Promise(function (resolve) {
-          var audio = new Audio(url);
-          audio.onended = function () {
-            if (revoke) URL.revokeObjectURL(url);
-            resolve();
-          };
-          audio.onerror = function () {
-            resolve();
-          };
-          audio.play().catch(function () {
-            resolve();
-          });
-        });
-      }
-
-      function browserTTS(text) {
-        return new Promise(function (resolve) {
-          if (!window.speechSynthesis) {
-            resolve();
-            return;
-          }
-          window.speechSynthesis.cancel();
-          var utt = new SpeechSynthesisUtterance(text);
-          utt.rate = 0.88;
-          utt.pitch = 0.9;
-          utt.volume = 1;
-          var voices = window.speechSynthesis.getVoices();
-          var pref = voices.find(function (v) {
-            return (
-              v.name.toLowerCase().includes("samantha") ||
-              v.name.toLowerCase().includes("karen") ||
-              v.name.toLowerCase().includes("moira")
-            );
-          });
-          if (pref) utt.voice = pref;
-          utt.onend = resolve;
-          utt.onerror = resolve;
-          window.speechSynthesis.speak(utt);
-        });
-      }
-
-      // ── URL share load ──
-      async function checkUrlForSharedAudio() {
-        var hash = window.location.hash;
-        if (!hash.startsWith("#whisper=")) return;
-        var b64 = hash.slice("#whisper=".length);
-        if (!b64) return;
-        setMode("reveal");
-        toast("Loading shared audio…", "ok");
-        try {
-          var binary = atob(b64),
-            bytes = new Uint8Array(binary.length);
-          for (var i = 0; i < binary.length; i++)
-            bytes[i] = binary.charCodeAt(i);
-          var ctx = getCtx();
-          rxBuffer = await ctx.decodeAudioData(bytes.buffer);
-          document.getElementById("rx-fname").textContent = "Shared audio";
-          document.getElementById("up-filename").textContent =
-            "📡 Loaded from share link";
-          document.getElementById("rx-section").style.display = "block";
-          document.getElementById("result-box").style.display = "none";
-          rxOffset = 0;
-          rxPlaying = false;
-          document.getElementById("rx-play-btn").textContent = "▶";
-          requestAnimationFrame(function () {
-            requestAnimationFrame(function () {
-              drawWaveform(rxBuffer);
-            });
-          });
-          toast("Shared audio loaded — press Reveal to decode", "ok");
-        } catch (e) {
-          toast("Could not load shared audio", "err");
-        }
-      }
-
-      // ── Drag & drop ──
-      var zone = document.getElementById("upload-zone");
-      zone.addEventListener("dragover", function (e) {
-        e.preventDefault();
-        zone.classList.add("over");
-      });
-      zone.addEventListener("dragleave", function () {
-        zone.classList.remove("over");
-      });
-      zone.addEventListener("drop", function (e) {
-        e.preventDefault();
-        zone.classList.remove("over");
-        var file = e.dataTransfer.files[0];
-        if (file) {
-          var dt = new DataTransfer();
-          dt.items.add(file);
-          var inp = zone.querySelector("input");
-          inp.files = dt.files;
-          handleUpload(inp);
-        }
-      });
-
-      // ── Init ──
-      window.addEventListener("load", function () {
-        try {
-          var p = localStorage.getItem("whisper_tts_provider") || "browser";
-          setTTSProvider(p);
-          var elKey = localStorage.getItem("whisper_el_key"),
-            elVoice = localStorage.getItem("whisper_el_voice");
-          var usKey = localStorage.getItem("whisper_us_key"),
-            usVoice = localStorage.getItem("whisper_us_voice");
-          if (elKey) document.getElementById("el-key").value = elKey;
-          if (elVoice) document.getElementById("el-voice").value = elVoice;
-          if (usKey) document.getElementById("us-key").value = usKey;
-          if (usVoice) document.getElementById("us-voice").value = usVoice;
-        } catch (e) {}
-        setTimeout(checkUrlForSharedAudio, 300);
-      });
-    </script>
+    <!-- Scripts — order matters: audio and stego before ui, ui before share/tts, all before app -->
+    <script src="js/audio.js"></script>
+    <script src="js/stego.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/tts.js"></script>
+    <script src="js/share.js"></script>
+    <script src="js/app.js"></script>
   </body>
 </html>
